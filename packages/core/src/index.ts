@@ -18,8 +18,16 @@ export {
 } from './machine.js'
 export {
   createInterpreter,
+  manualClock,
   type Action,
   type ActionApi,
+  type Clock,
+  type InspectionEvent,
+  type InterpreterOptions,
+  type InvokeConfig,
+  type InvokeInput,
+  type Observer,
+  type Subscribable,
   type EventObject,
   type Guard,
   type Interpreter,
