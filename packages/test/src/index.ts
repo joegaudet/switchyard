@@ -122,8 +122,8 @@ export interface CoverageReport {
 
 // The graph names events as diagrams do; a microstep names them as the runtime does.
 function graphEvent(type: string): string {
-  const after = /^xstate\.after\.(\d+)\./.exec(type)
-  if (after) return `after ${after[1]}ms`
+  const after = /^xstate\.after\.([^.]+)\./.exec(type)
+  if (after) return /^\d+$/.test(after[1]!) ? `after ${after[1]}ms` : `after ${after[1]}`
   const done = /^xstate\.done\.actor\.(.+)$/.exec(type)
   if (done) return `done: ${done[1]}`
   const error = /^xstate\.error\.actor\.(.+)$/.exec(type)

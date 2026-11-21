@@ -76,7 +76,7 @@ type Decoration =
   | { kind: 'always'; key: string; options: TransitionOptions }
   | { kind: 'entry' | 'exit'; key: string; state: State; in: string | undefined }
   | { kind: 'region'; key: string; states: EnumClass<State> }
-  | { kind: 'after'; key: string; ms: number; options: TransitionOptions }
+  | { kind: 'after'; key: string; ms: number | string; options: TransitionOptions }
   | { kind: 'invoke'; key: string; state: State; invoke: InvokeOptions }
 
 const DECORATIONS = Symbol('switchyard.decorations')
@@ -157,8 +157,11 @@ export const onEntry = (state: State, options: { in?: string } = {}) =>
 export const onExit = (state: State, options: { in?: string } = {}) =>
   methodDecorator(key => ({ kind: 'exit', key, state, in: options.in }), false)
 
-/** A delayed transition, on the machine's clock; the method runs as its action. */
-export const after = (ms: number, options: TransitionOptions) =>
+/**
+ * A delayed transition, on the machine's clock; the method runs as its action. `ms` is a number
+ * of milliseconds, or the name of a getter read each time the state is entered.
+ */
+export const after = (ms: number | string, options: TransitionOptions) =>
   methodDecorator(key => ({ kind: 'after', key, ms, options }), false)
 
 /**
@@ -229,10 +232,13 @@ interface Compiled {
   paths: Map<State, string[]>
   /** The root enum, or the regions' names and enums. */
   root: EnumClass<State> | [string, EnumClass<State>][]
+  /** Named `@after` delays: getters read when their state is entered. */
+  delays: Record<string, () => number>
 }
 
 function compile(ctor: typeof Machine, self: object | undefined): Compiled {
   const decorations = decorationsOf(ctor)
+  const delays: Record<string, () => number> = {}
   // A decorated `stop` or `send` would replace the machine's own: `machine(owner, m)` stops a
   // machine by calling `stop()`, and every event goes through `send()`.
   const reserved = Object.getOwnPropertyNames(Machine.prototype)
@@ -251,6 +257,16 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
       paths.set(s, [...(paths.get(s) ?? []), path])
       const node: StateConfig = s.final ? { type: 'final' } : {}
       if (s.children) node.states = tree(s.children, path)
+      if (s.regions) {
+        node.type = 'parallel'
+        node.states = Object.fromEntries(
+          Object.entries(s.regions).map(([k, e]) => {
+            const region: StateConfig = { states: tree(e, `${path}.${k}`) }
+            nodes.set(`${path}.${k}`, region)
+            return [k, region]
+          }),
+        )
+      }
       if (s.history) node.states!['$history'] = { type: 'history', history: s.history }
       nodes.set(path, node)
       out[s.value] = node
@@ -356,6 +372,12 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
       const node = nodeAt(pathOf(d.state, d.in))
       ;(node[d.kind] ??= []).push(call(d.key))
     } else if (d.kind === 'after') {
+      if (typeof d.ms === 'string') {
+        const getter = d.ms
+        if (!(getter in ctor.prototype))
+          throw new Error(`${name}: delay "${getter}" is not a getter on the class`)
+        delays[getter] = () => Number((self as Record<string, unknown> | undefined)?.[getter])
+      }
       for (const node of sources(d.options)) {
         const after = (node.after ??= {})
         after[d.ms] = [...[after[d.ms] ?? []].flat(), transitionConfig(d.options, call(d.key))]
@@ -381,7 +403,7 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
       ;(nodeAt(pathOf(d.state, region)).invoke ??= []).push(invocation)
     }
   }
-  return { config, paths, root }
+  return { config, paths, root, delays }
 }
 
 // The root enum is the one every other referenced enum descends from.
@@ -401,7 +423,12 @@ function rootEnum(ctor: typeof Machine, decorations: Decoration[]): EnumClass<St
     }
   }
   const below = (e: EnumClass<State>): EnumClass<State>[] =>
-    (e.values as State[]).flatMap(s => (s.children ? [s.children, ...below(s.children)] : []))
+    (e.values as State[]).flatMap(s =>
+      [...(s.children ? [s.children] : []), ...Object.values(s.regions ?? {})].flatMap(c => [
+        c,
+        ...below(c),
+      ]),
+    )
   const roots = [...referenced].filter(
     e => ![...referenced].some(o => o !== e && below(o).includes(e)),
   )
@@ -520,6 +547,55 @@ export function bindField(
   })
 }
 
+const defaultClock: Clock = {
+  setTimeout: (fn, ms) => globalThis.setTimeout(fn, ms),
+  clearTimeout: handle => globalThis.clearTimeout(handle as ReturnType<typeof setTimeout>),
+}
+
+/**
+ * Resolves with the machine once `predicate` holds (checked now, then after every change).
+ * With `timeout`, rejects if it has not held by then, on `clock` (default: the configured one).
+ */
+export function waitFor<M extends Machine<unknown>>(
+  machine: M,
+  predicate: (machine: M) => boolean,
+  { timeout, clock }: { timeout?: number; clock?: Clock } = {},
+): Promise<M> {
+  const timers = clock ?? configured.clock ?? defaultClock
+  return new Promise((resolve, reject) => {
+    let settled = false
+    let handle: unknown
+    // subscribe() can call back at once (it starts the machine), before it has returned `off`.
+    let off: () => void = () => {}
+    const settle = (fn: () => void) => {
+      if (settled) return
+      settled = true
+      off()
+      if (handle !== undefined) timers.clearTimeout(handle)
+      fn()
+    }
+    const check = () => predicate(machine) && settle(() => resolve(machine))
+    const unsubscribe = machine.subscribe(() => void check())
+    off = unsubscribe
+    if (settled) unsubscribe()
+    check()
+    if (!settled && timeout !== undefined)
+      handle = timers.setTimeout(
+        () =>
+          settle(() =>
+            reject(new Error(`${machine.constructor.name}: waitFor timed out after ${timeout}ms`)),
+          ),
+        timeout,
+      )
+  })
+}
+
+/** Resolves with the machine's `output` getter once it reaches a top-level final state. */
+export async function toPromise<M extends Machine<unknown>>(machine: M): Promise<unknown> {
+  await waitFor(machine, m => m.status === 'done')
+  return (machine as { output?: unknown }).output
+}
+
 const INTERNAL = Symbol('switchyard.internal')
 
 export abstract class Machine<S = State> {
@@ -612,6 +688,7 @@ export abstract class Machine<S = State> {
       this.#compiled = compile(ctor, this)
       this.#interpreter = createInterpreter(this.#compiled.config, {
         ...((ctor.clock ?? configured.clock) ? { clock: (ctor.clock ?? configured.clock)! } : {}),
+        delays: this.#compiled.delays,
         onUnhandled: event => {
           const text = message('unhandled')(ctor.name, event.type, this.#describeState())
           if (ctor.strict) throw new Error(text)

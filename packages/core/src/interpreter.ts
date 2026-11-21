@@ -46,8 +46,11 @@ export interface StateConfig {
   always?: TransitionConfig[]
   entry?: Action[]
   exit?: Action[]
-  /** Delayed transitions, keyed by milliseconds; cancelled if the state exits first. */
-  after?: Record<number, TransitionConfig | TransitionConfig[]>
+  /**
+   * Delayed transitions, keyed by milliseconds or a named delay (see `delays`); cancelled if the
+   * state exits first.
+   */
+  after?: Record<number | string, TransitionConfig | TransitionConfig[]>
   /** Actors that run while this state is active. */
   invoke?: InvokeConfig[]
 }
@@ -156,7 +159,8 @@ interface Node {
   history?: 'shallow' | 'deep'
   /** A history state's default transition. */
   fallback?: Transition
-  delays: number[]
+  /** `after` keys: milliseconds, or the name of a delay from the interpreter's `delays`. */
+  delays: string[]
   invokes: { id: string; config: InvokeConfig }[]
 }
 
@@ -175,6 +179,8 @@ export interface InterpreterOptions {
   onUnhandled?(event: EventObject): void
   /** Timers for `after`. Defaults to the global setTimeout; tests pass `manualClock()`. */
   clock?: Clock
+  /** Named `after` delays, read each time their state is entered: `after: { greenFor: … }`. */
+  delays?: Record<string, () => number>
 }
 
 const realClock: Clock = {
@@ -463,14 +469,20 @@ export function createInterpreter(
     }
   }
 
+  function delayOf(key: string): number {
+    const ms = /^\d+$/.test(key) ? Number(key) : options.delays?.[key]?.()
+    if (typeof ms !== 'number' || !(ms >= 0)) throw new Error(`after: no delay "${key}"`)
+    return ms
+  }
+
   // A state's timers start now; its invokes at the end of the macrostep.
   function activate(s: Node) {
     if (s.invokes.length) toInvoke.add(s)
     if (s.delays.length)
       timers.set(
         s,
-        s.delays.map(ms =>
-          clock.setTimeout(() => interpreter.send({ type: afterEvent(ms, s) }), ms),
+        s.delays.map(key =>
+          clock.setTimeout(() => interpreter.send({ type: afterEvent(key, s) }), delayOf(key)),
         ),
       )
   }
@@ -719,7 +731,7 @@ function build(config: MachineConfig): Node {
       entry: cfg.entry ?? [],
       exit: cfg.exit ?? [],
       transitions: [],
-      delays: Object.keys(cfg.after ?? {}).map(Number),
+      delays: Object.keys(cfg.after ?? {}),
       invokes: (cfg.invoke ?? []).map((config, i) => ({
         id: config.id ?? `${id || '(root)'}:invocation[${i}]`,
         config,
@@ -760,7 +772,7 @@ function build(config: MachineConfig): Node {
       for (const t of [ts].flat()) n.transitions.push(make(event, t))
     for (const t of cfg.always ?? []) n.transitions.push(make(undefined, t))
     for (const [ms, ts] of Object.entries(cfg.after ?? {}))
-      for (const t of [ts].flat()) n.transitions.push(make(afterEvent(Number(ms), n), t))
+      for (const t of [ts].flat()) n.transitions.push(make(afterEvent(ms, n), t))
     for (const { id, config: inv } of n.invokes) {
       if (inv.onDone) n.transitions.push(make(`xstate.done.actor.${id}`, inv.onDone))
       if (inv.onError) n.transitions.push(make(`xstate.error.actor.${id}`, inv.onError))
@@ -779,7 +791,7 @@ function build(config: MachineConfig): Node {
   return root
 }
 
-const afterEvent = (ms: number, n: Node) => `xstate.after.${ms}.${n.id || '(root)'}`
+const afterEvent = (delay: string, n: Node) => `xstate.after.${delay}.${n.id || '(root)'}`
 
 const isThenable = (v: unknown): v is PromiseLike<unknown> =>
   typeof (v as PromiseLike<unknown> | null)?.then === 'function'

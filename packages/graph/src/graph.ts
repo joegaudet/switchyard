@@ -84,7 +84,7 @@ export function toGraph(input: MachineClass | MachineConfig, name?: string): Gra
       for (const t of [ts].flat()) add(event, t)
     for (const t of cfg.always ?? []) add('always', t)
     for (const [ms, ts] of Object.entries(cfg.after ?? {}))
-      for (const t of [ts].flat()) add(`after ${ms}ms`, t)
+      for (const t of [ts].flat()) add(/^\d+$/.test(ms) ? `after ${ms}ms` : `after ${ms}`, t)
     ;(cfg.invoke ?? []).forEach((inv, i) => {
       if (inv.onDone) add(`done: ${state.invoke[i]}`, inv.onDone)
       if (inv.onError) add(`error: ${state.invoke[i]}`, inv.onError)
