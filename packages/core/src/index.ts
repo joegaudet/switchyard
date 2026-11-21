@@ -1,9 +1,11 @@
 export { State, type StateOptions } from './state.js'
 export {
+  after,
   always,
   and,
   history,
   HistoryTarget,
+  invoke,
   Machine,
   not,
   onEntry,
@@ -12,6 +14,7 @@ export {
   region,
   transition,
   type GuardRef,
+  type InvokeOptions,
   type MethodDecorator,
   type RegionDecorator,
   type TransitionOptions,

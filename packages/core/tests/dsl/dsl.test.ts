@@ -1,4 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { manualClock } from '../../src/index.js'
+
+const flush = () => new Promise(resolve => setTimeout(resolve, 0))
 import * as standard from './machines.standard.js'
 
 // A non-literal specifier, so TypeScript does not pull the legacy fixture into this
@@ -26,6 +29,11 @@ describe.each([
       Step,
       StrictFetch,
       Toggle,
+      Job,
+      Queue,
+      Upload,
+      Uploader,
+      Worker,
       ...rest
     },
   ) => {
@@ -188,6 +196,92 @@ describe.each([
         m.italicize()
         m.toggleBold()
         expect(m.state).toEqual({ bold: Toggle.Off, italic: Toggle.On })
+      })
+    })
+
+    describe('@invoke and @after', () => {
+      it('runs the method while its state is active, then takes onDone', async () => {
+        const m = new Worker()
+        m.begin()
+        expect(m.signal?.aborted).toBe(false)
+        m.settle!.resolve('ok')
+        await flush()
+        expect(m.state).toBe(Job.Done)
+        expect(m.result).toBe('ok')
+      })
+
+      it('takes onError when the method rejects', async () => {
+        const m = new Worker()
+        m.begin()
+        m.settle!.reject(new Error('nope'))
+        await flush()
+        expect(m.state).toBe(Job.Failed)
+      })
+
+      it('aborts the signal when the state exits, and ignores a late result', async () => {
+        const m = new Worker()
+        m.begin()
+        m.cancel()
+        expect(m.signal!.aborted).toBe(true)
+        m.settle!.resolve('late')
+        await flush()
+        expect(m.state).toBe(Job.Idle)
+      })
+
+      it('@after fires on the machine clock, and cancels the invoke', () => {
+        Worker.clock = manualClock()
+        const m = new Worker()
+        m.begin()
+        Worker.clock.advance(999)
+        expect(m.state).toBe(Job.Running)
+        Worker.clock.advance(1)
+        expect(m.state).toBe(Job.TimedOut)
+        expect(m.signal!.aborted).toBe(true)
+      })
+    })
+
+    describe('actors', () => {
+      it('spawned children reach the parent with sendParent, and are found by id and systemId', () => {
+        const m = new Uploader()
+        const child = m.add('a.txt')
+        expect(child.state).toBe(Upload.Sending)
+        expect(m.system.get('a.txt')).toBe(child)
+        m.sendTo('a.txt', 'finish')
+        expect(child.state).toBe(Upload.Sent)
+        expect(m.log).toEqual(['a.txt'])
+      })
+
+      it('an invoked child machine finishing takes onDone', () => {
+        const m = new Uploader()
+        expect(m.state).toBe(Queue.Working)
+        m.sendTo('main', 'finish')
+        expect(m.log).toEqual(['main'])
+        expect(m.state).toBe(Queue.Empty)
+      })
+
+      it('stopping the parent stops its spawned children', () => {
+        const m = new Uploader()
+        const child = m.add('b.txt')
+        m.stop()
+        expect(child.status).toBe('stopped')
+      })
+
+      it('emit() reaches on() listeners', () => {
+        const m = new Uploader()
+        const seen: unknown[] = []
+        const off = m.on('progress', e => void seen.push(e))
+        m.progressed('x')
+        off()
+        m.progressed('y')
+        expect(seen).toEqual([{ type: 'progress', name: 'x' }])
+      })
+
+      it('inspect() streams the interpreter events', () => {
+        const m = new Uploader().start()
+        const types: string[] = []
+        m.inspect(e => void types.push(e.type))
+        m.progressed('x')
+        expect(types).toEqual(['@xstate.event', '@xstate.microstep', '@xstate.snapshot'])
       })
     })
 

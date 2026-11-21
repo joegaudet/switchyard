@@ -121,6 +121,8 @@ export interface Interpreter {
   stop(): this
   /** Called after every macrostep that took a transition. Returns an unsubscribe function. */
   subscribe(listener: (interpreter: Interpreter) => void): () => void
+  /** Delivers an event to an invoked actor by id. False when no such actor is running. */
+  sendTo(id: string, event: EventObject): boolean
   /** Streams events, microsteps and snapshots. Returns an unsubscribe function. */
   inspect(listener: (event: InspectionEvent) => void): () => void
 }
@@ -275,6 +277,11 @@ export function createInterpreter(
     subscribe(listener) {
       listeners.add(listener)
       return () => void listeners.delete(listener)
+    },
+    sendTo(id, e) {
+      const actor = actors.get(id)
+      actor?.send(e)
+      return Boolean(actor)
     },
     inspect(listener) {
       inspectors.add(listener)
