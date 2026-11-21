@@ -27,8 +27,8 @@ Acceptance:
 - Exit runs in reverse document order and entry in document order. The transition domain is
   the LCCA, or the source for a non-reentering transition to a descendant. Targetless
   transitions exit nothing.
-- Event descriptors match SCXML-style token prefixes (`error` matches `error.execution`)
-  plus `*`.
+- Event descriptors follow xstate v5: an exact name, `x.*` or `*`. SCXML-style prefix matching
+  would make `done.state.p` also match `done.state.p.r1`.
 - Eventless transitions run until stable.
 - Final states raise `done.state.<parent>`. A parallel state is done when every region is
   done. A final child of the root stops the machine with `status: 'done'`.
@@ -55,11 +55,11 @@ Acceptance:
   stacked decorators on one method are allowed.
 - Source order is document order for conflict resolution.
 - A guard names a getter (`guard: 'hasRetriesLeft'`). `and/or/not` combinators exist. An
-  unknown name throws when the class is defined.
+  unknown name throws when the machine first compiles.
 - `@onEntry(S)`, `@onExit(S)`, `@always({ from, to, guard })`, and `@region` accessor fields
   for parallel regions work.
 - Child enums come from `State.of(v, { children })`, and history targets come from
-  `S.X.history`.
+  `history(S.X)`.
 - An event method called inside an action enqueues; it doesn't recurse. An event body that
   returns a promise warns in dev.
 - An unhandled event is a no-op that warns in dev, and `static strict = true` makes it throw.
