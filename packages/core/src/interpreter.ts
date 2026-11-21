@@ -55,6 +55,8 @@ export interface Interpreter {
   /** Active state paths in document order. */
   readonly configuration: string[]
   matches(path: string): boolean
+  /** Whether `event` would take a transition now, guards included. */
+  can(event: EventObject): boolean
   start(): this
   send(event: EventObject): this
   stop(): this
@@ -89,7 +91,15 @@ interface Transition {
   reenter: boolean
 }
 
-export function createInterpreter(config: MachineConfig): Interpreter {
+export interface InterpreterOptions {
+  /** Called for an external event that no transition handles. */
+  onUnhandled?(event: EventObject): void
+}
+
+export function createInterpreter(
+  config: MachineConfig,
+  options: InterpreterOptions = {},
+): Interpreter {
   const root = build(config)
   const configuration = new Set<Node>()
   const historyValue = new Map<Node, Node[]>()
@@ -127,6 +137,9 @@ export function createInterpreter(config: MachineConfig): Interpreter {
     },
     matches(path) {
       return [...configuration].some(n => n.id === path)
+    },
+    can(e) {
+      return status === 'active' && selectTransitions(e).length > 0
     },
     start() {
       if (status !== 'idle') return this
@@ -198,6 +211,7 @@ export function createInterpreter(config: MachineConfig): Interpreter {
       tookTransition = false
       const enabled = selectTransitions(event)
       if (enabled.length) microstep(enabled)
+      else options.onUnhandled?.(event)
       runToStable()
       if (tookTransition) notify()
     }

@@ -1,0 +1,10 @@
+{
+  "$comment": "Legacy-decorator fixtures (*.legacy.ts), typechecked the way Ember apps compile decorators. Not part of the solution build.",
+  "extends": "./tsconfig.tools.json",
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false
+  },
+  "include": ["packages/*/tests/**/*.legacy.ts"],
+  "exclude": []
+}
