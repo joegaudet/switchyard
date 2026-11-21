@@ -50,6 +50,11 @@ export interface TransitionOptions {
   reenter?: boolean
   /** The region, when a state's enum is used by more than one `@region`. */
   in?: string
+  /**
+   * The event's name, when it cannot be the method's: one of Machine's own (`stop`, `send`), or
+   * not an identifier (`media.ended`). Calling the method sends it.
+   */
+  event?: string
 }
 
 type Fn = (this: unknown, ...args: unknown[]) => unknown
@@ -109,7 +114,8 @@ export interface MethodDecorator {
 
 function methodDecorator(
   make: (key: string, body: Fn) => Decoration,
-  sends: boolean,
+  /** Replace the method with one that sends this event (`true`: the method's own name). */
+  sends: boolean | string,
 ): MethodDecorator {
   return ((target: unknown, context: unknown, descriptor?: PropertyDescriptor) => {
     const standard = isStandard(context)
@@ -123,9 +129,10 @@ function methodDecorator(
       make(key, body),
     )
     if (!sends) return standard ? undefined : descriptor
+    const event = sends === true ? key : sends
     const sender = Object.assign(
       function (this: Machine, ...args: unknown[]) {
-        this.send(key, ...args)
+        this.send(event, ...args)
       },
       { [BODY]: body },
     )
@@ -135,7 +142,10 @@ function methodDecorator(
 
 /** Makes the method an event: calling it sends the event, and its body runs as the action. */
 export const transition = (options: TransitionOptions = {}) =>
-  methodDecorator((key, body) => ({ kind: 'transition', key, options, body }), true)
+  methodDecorator(
+    (key, body) => ({ kind: 'transition', key, options, body }),
+    options.event ?? true,
+  )
 
 /** An eventless transition, taken as soon as its guard holds. The method runs as its action. */
 export const always = (options: TransitionOptions) =>
@@ -223,6 +233,14 @@ interface Compiled {
 
 function compile(ctor: typeof Machine, self: object | undefined): Compiled {
   const decorations = decorationsOf(ctor)
+  // A decorated `stop` or `send` would replace the machine's own: `machine(owner, m)` stops a
+  // machine by calling `stop()`, and every event goes through `send()`.
+  const reserved = Object.getOwnPropertyNames(Machine.prototype)
+  for (const d of decorations)
+    if (reserved.includes(d.key))
+      throw new Error(
+        `${ctor.name}: "${d.key}" is part of the Machine API; rename the decorated method`,
+      )
   const paths = new Map<State, string[]>()
   const nodes = new Map<string, StateConfig>()
 
@@ -309,8 +327,15 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
     }
   }
 
-  const sources = (options: TransitionOptions) =>
-    options.from ? [options.from].flat().map(s => nodeAt(pathOf(s, options.in))) : [config]
+  // No `from`: every state handles it. In a parallel machine that means every state of one
+  // region (`in`, or the target's); sourcing it on the root would exit and reset every region.
+  const sources = (options: TransitionOptions): StateConfig[] => {
+    if (options.from) return [options.from].flat().map(s => nodeAt(pathOf(s, options.in)))
+    if (!Array.isArray(root)) return [config]
+    const to = options.to instanceof HistoryTarget ? options.to.state : options.to
+    const region = options.in ?? (to ? pathOf(to, undefined).split('.')[0] : undefined)
+    return [region ? nodeAt(region) : config]
+  }
 
   for (const d of decorations) {
     if (d.kind === 'transition') {
@@ -321,7 +346,8 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
       }, d.key)
       for (const node of sources(d.options)) {
         const on = (node.on ??= {})
-        on[d.key] = [...[on[d.key] ?? []].flat(), transitionConfig(d.options, action)]
+        const event = d.options.event ?? d.key
+        on[event] = [...[on[event] ?? []].flat(), transitionConfig(d.options, action)]
       }
     } else if (d.kind === 'always') {
       for (const node of sources(d.options))

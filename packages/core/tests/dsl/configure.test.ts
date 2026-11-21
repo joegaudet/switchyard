@@ -74,3 +74,81 @@ describe('configure({ messages })', () => {
     configure({ messages: undefined })
   })
 })
+
+describe('reserved names', () => {
+  it('a decorated method may not shadow the Machine API', async () => {
+    const { Machine, State, after, transition } = await import('../../src/index.js')
+    class S extends State {
+      static A = S.of('a')
+      static B = S.of('b')
+    }
+    class Bad extends Machine<S> {
+      @after(10, { from: S.A, to: S.B })
+      override stop() {
+        return this
+      }
+    }
+    expect(() => new Bad().state).toThrow(
+      /Bad: "stop" is part of the Machine API; rename the decorated method/,
+    )
+    class AlsoBad extends Machine<S> {
+      @transition({ from: S.A, to: S.B })
+      override send() {}
+    }
+    expect(() => new AlsoBad().status).not.toThrow() // status does not compile
+    expect(() => AlsoBad.toConfig()).toThrow(/"send" is part of the Machine API/)
+  })
+})
+
+describe('parallel machines', () => {
+  it('a transition with no `from` stays inside its target region', async () => {
+    const { Machine, State, region, transition } = await import('../../src/index.js')
+    class Toggle extends State {
+      static Off = Toggle.of('off')
+      static On = Toggle.of('on')
+    }
+    class Align extends State {
+      static Left = Align.of('left')
+      static Right = Align.of('right')
+    }
+    class Format extends Machine<{ bold: Toggle; align: Align }> {
+      @region(Toggle) accessor bold!: Toggle
+      @region(Align) accessor align!: Align
+
+      @transition({ in: 'bold', from: Toggle.Off, to: Toggle.On })
+      embolden() {}
+
+      @transition({ to: Align.Right })
+      alignRight() {}
+    }
+    const m = new Format()
+    m.embolden()
+    m.alignRight()
+    expect(m.state).toEqual({ bold: Toggle.On, align: Align.Right })
+  })
+})
+
+describe('event names', () => {
+  it('`event` names the event when the method name cannot be it', async () => {
+    const { Machine, State, transition } = await import('../../src/index.js')
+    class P extends State {
+      static Playing = P.of('playing')
+      static Stopped = P.of('stopped')
+    }
+    class Player extends Machine<P> {
+      @transition({ event: 'stop', from: P.Playing, to: P.Stopped })
+      onStop() {}
+
+      @transition({ event: 'media.ended', from: P.Playing, to: P.Stopped })
+      ended() {}
+    }
+    const a = new Player()
+    expect(a.can['stop']).toBe(true)
+    a.onStop()
+    expect(a.state).toBe(P.Stopped)
+    const b = new Player()
+    b.send('media.ended')
+    expect(b.state).toBe(P.Stopped)
+    expect(Object.keys(Player.toConfig().states!['playing']!.on!)).toEqual(['stop', 'media.ended'])
+  })
+})
