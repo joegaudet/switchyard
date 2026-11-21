@@ -51,3 +51,26 @@ describe('configure', () => {
     expect(m.state).toBe(Job.Done)
   })
 })
+
+describe('configure({ messages })', () => {
+  it('replaces the text of warnings and the strict error', async () => {
+    const { StrictFetch } = await import('./machines.standard.js')
+    const { vi } = await import('vitest')
+    configure({
+      messages: {
+        unhandled: (machine, event, state) => `${machine} : « ${event} » refusé dans ${state}`,
+        asyncEvent: (machine, event) => `${machine} : « ${event} » est asynchrone`,
+      },
+    })
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    new Fetch().resolve('x')
+    expect(warn).toHaveBeenCalledWith('Fetch : « resolve » refusé dans idle')
+    new Fetch().ping()
+    expect(warn).toHaveBeenCalledWith('Fetch : « ping » est asynchrone')
+    expect(() => new StrictFetch().resolve('x')).toThrow(
+      'StrictFetch : « resolve » refusé dans idle',
+    )
+    warn.mockRestore()
+    configure({ messages: undefined })
+  })
+})

@@ -317,9 +317,7 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
       const action: Action = named(event => {
         const result = d.body.apply(self, (event['args'] as unknown[]) ?? [])
         if (dev && typeof (result as Promise<unknown>)?.then === 'function')
-          console.warn(
-            `${name}: event "${d.key}" returned a promise; run async work in @invoke or @onEntry`,
-          )
+          console.warn(message('asyncEvent')(name, d.key))
       }, d.key)
       for (const node of sources(d.options)) {
         const on = (node.on ??= {})
@@ -398,7 +396,28 @@ export interface Configuration {
   clock?: Clock | undefined
   /** Sees every `@invoke` promise; Ember wraps it in a test waiter. Returns the promise to await. */
   track?: (<T>(promise: Promise<T>) => Promise<T>) | undefined
+  /** Replaces the English text of development warnings and the `strict` error, per message. */
+  messages?: Partial<Messages> | undefined
 }
+
+/** The library's own messages. Each takes the machine class name first. */
+export interface Messages {
+  unhandled(machine: string, event: string, state: string): string
+  asyncEvent(machine: string, event: string): string
+  noActor(machine: string, id: string, event: string): string
+  noParent(machine: string, event: string): string
+}
+
+const english: Messages = {
+  unhandled: (machine, event, state) => `${machine}: no transition for "${event}" in ${state}`,
+  asyncEvent: (machine, event) =>
+    `${machine}: event "${event}" returned a promise; run async work in @invoke or @onEntry`,
+  noActor: (machine, id, event) => `${machine}: no actor "${id}" for "${event}"`,
+  noParent: (machine, event) => `${machine}: sendParent("${event}") with no parent`,
+}
+
+const message = <K extends keyof Messages>(key: K): Messages[K] =>
+  configured.messages?.[key] ?? english[key]
 
 const configured: Configuration = {}
 
@@ -568,9 +587,9 @@ export abstract class Machine<S = State> {
       this.#interpreter = createInterpreter(this.#compiled.config, {
         ...((ctor.clock ?? configured.clock) ? { clock: (ctor.clock ?? configured.clock)! } : {}),
         onUnhandled: event => {
-          const message = `${ctor.name}: no transition for "${event.type}" in ${this.#describeState()}`
-          if (ctor.strict) throw new Error(message)
-          if (dev) console.warn(message)
+          const text = message('unhandled')(ctor.name, event.type, this.#describeState())
+          if (ctor.strict) throw new Error(text)
+          if (dev) console.warn(text)
         },
       })
       this.#interpreter.subscribe(() => configured.reactivity?.dirty(this))
@@ -657,13 +676,13 @@ export abstract class Machine<S = State> {
     const spawned = this.#spawned.get(id)
     if (spawned) return spawned.send(event, ...args)
     if (!this.#i.sendTo(id, { type: event, args }) && dev)
-      console.warn(`${this.constructor.name}: no actor "${id}" for "${event}"`)
+      console.warn(message('noActor')(this.constructor.name, id, event))
   }
 
   /** Sends an event to the machine that spawned or invoked this one. */
   sendParent(event: string, ...args: unknown[]): void {
     if (this.#parent) this.#parent.send(event, ...args)
-    else if (dev) console.warn(`${this.constructor.name}: sendParent("${event}") with no parent`)
+    else if (dev) console.warn(message('noParent')(this.constructor.name, event))
   }
 
   /** Actors registered by systemId anywhere in this machine's tree. */

@@ -80,3 +80,5 @@ export function matches(target: Machine<unknown>, state: State): boolean {
 export function can(target: Machine<unknown>, event: string): boolean {
   return target.can[event] ?? false
 }
+
+export { announcement, SwitchyardAnnouncer } from './announcer.gts'
