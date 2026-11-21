@@ -39,8 +39,11 @@ export function toMermaid(graph: Graph): string {
   if (graph.root.type === 'parallel') declare({ ...graph.root, key: graph.name }, 1)
   else body(graph.root, 1)
 
+  // A transition with no source state is handled in every state: drawn from "any state".
+  const from = (id: string) => (id ? mid(id) : '__any')
+  if (graph.transitions.some(t => !t.source)) lines.push('  state "any state" as __any')
   for (const t of graph.transitions)
-    lines.push(`  ${mid(t.source)} --> ${mid(t.target ?? t.source)} : ${quote(t.label)}`)
+    lines.push(`  ${from(t.source)} --> ${from(t.target ?? t.source)} : ${quote(t.label)}`)
   return `${lines.join('\n')}\n`
 }
 
@@ -84,12 +87,16 @@ export function toDot(graph: Graph): string {
     lines.push(`  __start -> ${mid(graph.root.initial)};`)
   }
   graph.root.children.forEach(c => declare(c, 1))
+  // Transitions with no source state are handled in every state.
+  if (graph.transitions.some(t => !t.source))
+    lines.push('  __any [shape=plaintext, label="any state"];')
+  const node = (id: string) => (id ? mid(id) : '__any')
   for (const t of graph.transitions) {
     const target = t.target ?? t.source
     const attrs = [`label="${quote(t.label)}"`]
     if (clusters.has(t.source)) attrs.push(`ltail=cluster_${mid(t.source)}`)
     if (clusters.has(target)) attrs.push(`lhead=cluster_${mid(target)}`)
-    lines.push(`  ${mid(t.source)} -> ${mid(target)} [${attrs.join(', ')}];`)
+    lines.push(`  ${node(t.source)} -> ${node(target)} [${attrs.join(', ')}];`)
   }
   lines.push('}')
   return `${lines.join('\n')}\n`
