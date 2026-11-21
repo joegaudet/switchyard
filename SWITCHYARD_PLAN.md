@@ -244,10 +244,15 @@ serialized from test runs.
 
 ### Phase 10: Site and guide
 
-The landing page, a `docs-app/` guide with a live example and live diagram on every page,
-the four flagship demos, the comparison and migration pages, a11y guidance, site i18n, the
-family theme, a social card and `llms.txt`. This adds `pages.yml`. Writing the guide
-alongside Phases 4–9 is fine, but it ships here.
+The landing page in `docs/site/` and the `docs-app/` guide, built into `docs/site/guide/`. Every
+page has a live example and a live chart. The examples' source is imported `?raw`, so it can't
+drift. The four flagship demos, the comparison and migration pages, a11y guidance,
+`<SwitchyardAnnouncer>`, localizable library messages (`configure({ messages })`), the social
+card, `llms.txt` and `pages.yml` are all here.
+
+**Deferred: site translation.** No site in the family is translated yet, so there is no
+pattern to follow. The site is English until one exists. Enum labels become translatable for
+free through real-enums' i18n work, because `State` extends `Enum`.
 
 ### Phase 11: 0.x → 1.0
 
