@@ -100,6 +100,9 @@ export function createInterpreter(config: MachineConfig): Interpreter {
   let processing = false
   let event: EventObject = { type: 'xstate.init' }
   let tookTransition = false
+  // A function, not an inline comparison: actions can stop the machine mid-call, which
+  // TypeScript's narrowing of `status` cannot see.
+  const stopped = () => status === 'stopped'
 
   const api: ActionApi = {
     raise: e => void internalQueue.push(e),
@@ -130,13 +133,15 @@ export function createInterpreter(config: MachineConfig): Interpreter {
       status = 'active'
       processing = true
       try {
+        run(root.entry)
         const targets = root.type === 'parallel' ? root.children.filter(isState) : [root.initial!]
         enterStates([transition(root, undefined, targets)])
         runToStable()
-        notify()
+        if (!stopped()) notify()
         drain()
       } finally {
         processing = false
+        if (stopped()) exitAll()
       }
       return this
     },
@@ -149,25 +154,38 @@ export function createInterpreter(config: MachineConfig): Interpreter {
           drain()
         } finally {
           processing = false
+          if (stopped()) exitAll()
         }
       }
       return this
     },
+    // Stopping mid-step (from an action or a listener) ends the step where it stands; the
+    // remaining states exit once control is back at the step boundary, as SCXML's exitInterpreter.
     stop() {
-      if (status === 'active') {
-        for (const s of [...configuration].sort(byExitOrder)) {
-          run(s.exit)
-          configuration.delete(s)
-        }
-      }
+      const wasActive = status === 'active'
       status = 'stopped'
       externalQueue.length = internalQueue.length = 0
+      if (wasActive && !processing) exitAll()
       return this
     },
     subscribe(listener) {
       listeners.add(listener)
       return () => void listeners.delete(listener)
     },
+  }
+
+  function exitAll() {
+    processing = true
+    try {
+      for (const s of [...configuration].sort(byExitOrder)) {
+        configuration.delete(s)
+        run(s.exit)
+      }
+      run(root.exit)
+    } finally {
+      processing = false
+      externalQueue.length = internalQueue.length = 0
+    }
   }
 
   function notify() {
@@ -198,6 +216,17 @@ export function createInterpreter(config: MachineConfig): Interpreter {
     }
   }
 
+  // SCXML 5.9: a condition that throws is false, and raises error.execution.
+  function passes(t: Transition, e: EventObject): boolean {
+    if (!t.guard) return true
+    try {
+      return t.guard(e)
+    } catch (error) {
+      internalQueue.push({ type: 'error.execution', error })
+      return false
+    }
+  }
+
   function selectTransitions(e: EventObject | undefined): Transition[] {
     const enabled = new Set<Transition>()
     const atomic = [...configuration].filter(s => s.type === 'atomic' || s.type === 'final')
@@ -206,7 +235,7 @@ export function createInterpreter(config: MachineConfig): Interpreter {
         const t = s.transitions.find(
           t =>
             (e ? t.event !== undefined && matchesEvent(t.event, e.type) : t.event === undefined) &&
-            (!t.guard || t.guard(e ?? event)),
+            passes(t, e ?? event),
         )
         if (t) {
           enabled.add(t)
@@ -239,8 +268,8 @@ export function createInterpreter(config: MachineConfig): Interpreter {
   function microstep(enabled: Transition[]) {
     tookTransition = true
     exitStates(enabled)
-    for (const t of enabled) run(t.actions)
-    enterStates(enabled)
+    for (const t of enabled) if (status === 'active') run(t.actions)
+    if (status === 'active') enterStates(enabled)
   }
 
   function exitStates(enabled: Transition[]) {
@@ -256,6 +285,7 @@ export function createInterpreter(config: MachineConfig): Interpreter {
       }
     }
     for (const s of toExit) {
+      if (stopped()) return
       run(s.exit)
       configuration.delete(s)
     }
@@ -277,8 +307,11 @@ export function createInterpreter(config: MachineConfig): Interpreter {
       for (const s of t.targets) addDescendantStatesToEnter(s, toEnter)
       const domain = getTransitionDomain(t)
       for (const s of getEffectiveTargetStates(t)) addAncestorStatesToEnter(s, domain, toEnter)
+      // SCXML's domain is never parallel; a parallel root re-enters any region left out.
+      if (domain === root && root.type === 'parallel') addMissingRegions(root, toEnter)
     }
     for (const s of [...toEnter].sort(byDocumentOrder)) {
+      if (stopped()) return
       configuration.add(s)
       run(s.entry)
       if (s.type !== 'final') continue
@@ -288,13 +321,17 @@ export function createInterpreter(config: MachineConfig): Interpreter {
         continue
       }
       internalQueue.push({ type: `done.state.${parent.id}` })
-      const grandparent = parent.parent!
-      if (
-        grandparent.type === 'parallel' &&
-        grandparent.children.filter(isState).every(isInFinalState)
+      // Appendix D checks only the grandparent; a parallel nested in a parallel needs the chain.
+      for (
+        let anc = parent.parent;
+        anc?.type === 'parallel' && isInFinalState(anc);
+        anc = anc.parent
       ) {
-        if (grandparent === root) status = 'done'
-        else internalQueue.push({ type: `done.state.${grandparent.id}` })
+        if (anc === root) {
+          status = 'done'
+          break
+        }
+        internalQueue.push({ type: `done.state.${anc.id}` })
       }
     }
   }
@@ -312,11 +349,13 @@ export function createInterpreter(config: MachineConfig): Interpreter {
     if (state.type === 'compound') {
       addDescendantStatesToEnter(state.initial!, toEnter)
       addAncestorStatesToEnter(state.initial!, state, toEnter)
-    } else if (state.type === 'parallel') {
-      for (const child of state.children.filter(isState)) {
-        if (![...toEnter].some(s => isDescendant(s, child)))
-          addDescendantStatesToEnter(child, toEnter)
-      }
+    } else if (state.type === 'parallel') addMissingRegions(state, toEnter)
+  }
+
+  function addMissingRegions(state: Node, toEnter: Set<Node>) {
+    for (const child of state.children.filter(isState)) {
+      if (![...toEnter].some(s => isDescendant(s, child)))
+        addDescendantStatesToEnter(child, toEnter)
     }
   }
 
@@ -324,11 +363,7 @@ export function createInterpreter(config: MachineConfig): Interpreter {
     for (const anc of properAncestors(state, ancestor)) {
       if (anc === root) continue
       toEnter.add(anc)
-      if (anc.type !== 'parallel') continue
-      for (const child of anc.children.filter(isState)) {
-        if (![...toEnter].some(s => isDescendant(s, child)))
-          addDescendantStatesToEnter(child, toEnter)
-      }
+      if (anc.type === 'parallel') addMissingRegions(anc, toEnter)
     }
   }
 
@@ -386,6 +421,8 @@ function build(config: MachineConfig): Node {
       const initial = cfg.initial ?? keys.find(k => cfg.states![k]!.type !== 'history')
       n.initial = n.children.find(c => c.id.split('.').pop() === initial)
       if (!n.initial) throw new Error(`State "${id || '(root)'}" has no initial state "${initial}"`)
+      if (n.initial.type === 'history' && !cfg.states![initial!]!.target)
+        throw new Error(`State "${id || '(root)'}": an initial history state needs a target`)
     }
     pending.push([n, cfg])
     return n
@@ -415,7 +452,11 @@ function build(config: MachineConfig): Node {
       n.fallback = transition(
         n,
         undefined,
-        cfg.target ? resolve(n, cfg.target) : [n.parent!.initial!],
+        cfg.target
+          ? resolve(n, cfg.target)
+          : n.parent!.type === 'parallel'
+            ? n.parent!.children.filter(isState)
+            : [n.parent!.initial!],
       )
   }
   return root
