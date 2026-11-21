@@ -203,6 +203,10 @@ function decorationsOf(ctor: typeof Machine): Decoration[] {
   })
 }
 
+// Diagrams label transitions with these names; see @switchyard/graph.
+const named = <F extends (...args: never[]) => unknown>(fn: F, name: string): F =>
+  Object.defineProperty(fn, 'name', { value: name })
+
 const dev =
   (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.[
     'NODE_ENV'
@@ -272,24 +276,22 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
     if (typeof ref === 'string') {
       if (!(ref in ctor.prototype))
         throw new Error(`${name}: guard "${ref}" is not a getter on the class`)
-      return () => Boolean((self as Record<string, unknown> | undefined)?.[ref])
+      return named(() => Boolean((self as Record<string, unknown> | undefined)?.[ref]), ref)
     }
     if ('and' in ref) {
       const gs = ref.and.map(guardOf)
-      return e => gs.every(g => g(e))
+      return named(e => gs.every(g => g(e)), gs.map(g => g.name).join(' && '))
     }
     if ('or' in ref) {
       const gs = ref.or.map(guardOf)
-      return e => gs.some(g => g(e))
+      return named(e => gs.some(g => g(e)), gs.map(g => g.name).join(' || '))
     }
     const g = guardOf(ref.not)
-    return e => !g(e)
+    return named(e => !g(e), `!${g.name}`)
   }
 
-  const call =
-    (key: string): Action =>
-    () =>
-      void (self as unknown as Record<string, () => unknown>)?.[key]?.()
+  const call = (key: string): Action =>
+    named(() => void (self as unknown as Record<string, () => unknown>)?.[key]?.(), key)
 
   const transitionConfig = (options: TransitionOptions, action: Action): TransitionConfig => {
     const { to } = options
@@ -312,13 +314,13 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
 
   for (const d of decorations) {
     if (d.kind === 'transition') {
-      const action: Action = event => {
+      const action: Action = named(event => {
         const result = d.body.apply(self, (event['args'] as unknown[]) ?? [])
         if (dev && typeof (result as Promise<unknown>)?.then === 'function')
           console.warn(
             `${name}: event "${d.key}" returned a promise; run async work in @invoke or @onEntry`,
           )
-      }
+      }, d.key)
       for (const node of sources(d.options)) {
         const on = (node.on ??= {})
         on[d.key] = [...[on[d.key] ?? []].flat(), transitionConfig(d.options, action)]
