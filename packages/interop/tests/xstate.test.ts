@@ -183,8 +183,8 @@ describe('toClassSource', () => {
         @transition({ from: PlayerState.Stopped, to: PlayerState.Playing })
         play() {}
 
-        @transition({ from: PlayerState.Playing, to: PlayerState.Stopped })
-        stop() {}
+        @transition({ event: 'stop', from: PlayerState.Playing, to: PlayerState.Stopped })
+        onStop() {}
 
         @transition({ from: PlayerState.Playing, to: PlayerPlaying.Seeking, guard: 'canSeek' })
         seek() {}

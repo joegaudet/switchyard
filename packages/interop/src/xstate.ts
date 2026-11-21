@@ -1,4 +1,5 @@
 // xstate v5 machine JSON in both directions, and xstate config → decorated-class source.
+import { Machine } from '@switchyard/core'
 import type {
   Action,
   Guard,
@@ -223,12 +224,14 @@ const pascal = (s: string) => {
   return /^[0-9]/.test(p) ? `_${p}` : p || '_'
 }
 const isIdentifier = (s: string) => /^[A-Za-z_$][\w$]*$/.test(s)
+// Machine's own members; an event with one of these names gets a method of another name.
+const reserved = new Set(Object.getOwnPropertyNames(Machine.prototype))
 
 /**
  * TypeScript source for a decorated Switchyard class equivalent to an xstate config. Guards
  * become getter stubs and invoked actors async method stubs, each marked TODO; transition
  * actions are listed in the event method's body. What the DSL cannot express yet (nested
- * parallel states, non-identifier event names, multiple targets, compound onDone) is left as a
+ * parallel states, multiple targets, compound onDone) is left as a
  * comment rather than guessed.
  */
 export function toClassSource(json: XStateNode, name = pascal(json.id ?? 'Machine')): string {
@@ -321,16 +324,15 @@ export function toClassSource(json: XStateNode, name = pascal(json.id ?? 'Machin
     for (const [event, ts] of Object.entries(n.on ?? {})) {
       for (const t of list<string | XStateTransition>(ts)) {
         const obj = typeof t === 'string' ? { target: t } : t
-        if (!isIdentifier(event)) {
-          unsupported.push(`event "${event}" on "${path || '(root)'}" is not a method name`)
-          continue
-        }
         const opts = options(source, obj, `"${event}" on "${path || '(root)'}"`)
         if (!opts) continue
         imports.add('transition')
-        events.set(event, [...(events.get(event) ?? []), `  @transition(${opts})`])
+        // `stop` or `media.ended` cannot be the method's name; the method says which event it sends.
+        const method = isIdentifier(event) && !reserved.has(event) ? event : `on${pascal(event)}`
+        const decorator = method === event ? opts : opts.replace('{ ', `{ event: '${event}', `)
+        events.set(method, [...(events.get(method) ?? []), `  @transition(${decorator})`])
         for (const a of list(obj.actions))
-          (bodies.get(event) ?? bodies.set(event, new Set()).get(event)!).add(
+          (bodies.get(method) ?? bodies.set(method, new Set()).get(method)!).add(
             typeof a === 'string' ? a : a.type,
           )
       }
