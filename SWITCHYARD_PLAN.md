@@ -144,8 +144,7 @@ in each. real-enums gets **additive minor releases only**. Joinery adopts switch
 packages/
   core/          @switchyard/core        State, Machine, decorators, interpreter, actors, inspect, snapshot
   ember/         @switchyard/ember       v2 addon: tracking, owner/destroyables, resource, helpers, waiters, services
-  graph/         @switchyard/graph       toGraph(), plus Mermaid, DOT and ELK→SVG renderers
-  viewer/        @switchyard/viewer      the interactive diagram web component and live overlay
+  graph/         @switchyard/graph       toGraph(), Mermaid, DOT and ELK→SVG; /viewer: the live web component
   interop/       @switchyard/interop     xstate JSON and SCXML import/export, plus the codegen
   test/          @switchyard/test        clock, matchers, coverage, and model-based paths
   harnessed/     @switchyard/harnessed   MBT on harnessed
@@ -216,9 +215,11 @@ attributes (mirror) and query params (accessor).
 
 ### Phase 6: Diagrams
 
-`@switchyard/graph` (`toGraph()`, Mermaid, DOT and ELK→SVG for the statechart, interface
-view and topology) and `@switchyard/viewer` (the interactive, live web component and
-`<SwitchyardDebug>`).
+`@switchyard/graph`: `toGraph()`; Mermaid, DOT and ELK→SVG for the statechart; the interface
+view and actor topology; and `@switchyard/graph/viewer`, the live `<switchyard-diagram>` web
+component (folded in from a separate viewer package, since it is a few dozen lines over the
+SVG). `<SwitchyardDebug>` is `@switchyard/ember/debug`. Payload types in the interface view
+come with the build-time CLI (Phase 9).
 
 ### Phase 7: Interop
 

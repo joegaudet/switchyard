@@ -348,7 +348,7 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
           if (!(result instanceof Machine))
             return configured.track && result instanceof Promise ? configured.track(result) : result
           child = result
-          return Machine[INTERNAL].adopt(self as Machine<unknown>, child, systemId)
+          return Machine[INTERNAL].adopt(self as Machine<unknown>, child, systemId, invocation.id!)
         },
         output: () => (child as { output?: unknown } | undefined)?.output,
         ...(onDone ? { onDone: { target: pathOf(onDone, region) } } : {}),
@@ -492,11 +492,18 @@ export abstract class Machine<S = State> {
   #parent?: Machine<unknown>
   #system = new Map<string, Machine<unknown>>()
   #spawned = new Map<string, Machine<unknown>>()
+  #invoked = new Map<string, Machine<unknown>>()
   #listeners = new Map<string, Set<(event: { type: string }) => void>>()
 
   // Module-internal: lets compile() link an invoked child, which needs the private fields.
   static [INTERNAL] = {
-    adopt(parent: Machine<unknown>, child: Machine<unknown>, systemId: string | undefined) {
+    adopt(
+      parent: Machine<unknown>,
+      child: Machine<unknown>,
+      systemId: string | undefined,
+      invokedAs?: string,
+    ) {
+      if (invokedAs) parent.#invoked.set(invokedAs, child)
       child.#parent = parent
       child.#system = parent.#system
       if (systemId) parent.#system.set(systemId, child)
@@ -629,6 +636,14 @@ export abstract class Machine<S = State> {
     Machine[INTERNAL].adopt(this, child, options.systemId)
     this.#spawned.set(options.id, child)
     return child.start()
+  }
+
+  /** Running child machines, invoked then spawned, by id. Diagrams draw the actor tree from it. */
+  get actors(): Map<string, Machine<unknown>> {
+    void this.#i
+    configured.reactivity?.consume(this)
+    const running = [...this.#invoked, ...this.#spawned].filter(([, m]) => m.status === 'active')
+    return new Map(running)
   }
 
   /** Sends an event to a spawned or invoked actor by id. */

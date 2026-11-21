@@ -92,3 +92,15 @@ describe('bindField', () => {
     expect(m.state).toBe(Order.Delivered)
   })
 })
+
+describe('actors', () => {
+  it('lists running spawned and invoked child machines by id', async () => {
+    const { Uploader } = await import('./machines.standard.js')
+    const m = new Uploader()
+    const child = m.add('a.txt')
+    expect([...m.actors.keys()]).toEqual(['main', 'a.txt'])
+    expect(m.actors.get('a.txt')).toBe(child)
+    m.sendTo('main', 'finish')
+    expect([...m.actors.keys()]).toEqual(['a.txt'])
+  })
+})

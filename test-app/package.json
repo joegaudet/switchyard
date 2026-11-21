@@ -38,6 +38,7 @@
     "@rollup/plugin-babel": "^7.1.0",
     "@switchyard/core": "workspace:*",
     "@switchyard/ember": "workspace:*",
+    "@switchyard/graph": "workspace:*",
     "@types/qunit": "^2.19.14",
     "babel-plugin-ember-template-compilation": "^4.0.1",
     "decorator-transforms": "^2.4.0",
