@@ -21,5 +21,12 @@ import EditorDemo from 'docs-app/components/demos/editor-demo'
     <code>in</code>. For the same reason, ask the region (<code>m.bold === Toggle.On</code>)
     rather than <code>m.matches(Toggle.On)</code>, which is true if either is on.
   </p>
+  <h2>Regions inside a state</h2>
+  <p>
+    Regions can also live inside one state of a larger machine:
+    <code>static Editing = Doc.of('editing', &lbrace; regions: &lbrace; bold: Toggle, italic: Toggle &rbrace; &rbrace;)</code>.
+    Both regions run while <code>editing</code> is active; their transitions name the region by
+    its path, <code>&lbrace; in: 'editing.bold' &rbrace;</code>.
+  </p>
   <EditorDemo />
 </template>

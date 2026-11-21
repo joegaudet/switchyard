@@ -68,13 +68,19 @@ class Fetch extends Machine<FetchState> {
 - `@onEntry(S)`, `@onExit(S)`, `@always({ from, to, guard })` (eventless), `@region(E) accessor x!: E`
   for parallel regions (the root becomes parallel; `m.state` is `{ x: E.Value, … }`). A state
   enum shared by two regions needs `{ in: 'regionName' }` on decorators that use it.
+- Regions inside one state: `S.of('editing', { regions: { bold: Toggle } })`, addressed with
+  `{ in: 'editing.bold' }`.
+- A method may not be named after Machine's own members (`stop`, `send`, `state`, …); name the
+  event apart: `@transition({ event: 'stop', … }) onStop() {}`. Also for dotted event names.
+- `@after('getterName', …)` reads the delay from a getter on entry.
 - An unhandled event is a no-op with a development warning; `static strict = true` throws.
 
 ## Reading a machine
 
 `m.state` (the root value), `m.matches(State.X)` (any depth), `m.can.retry`, `m.status`,
 `m.snapshot()` / `m.restore(snapshot)`, `m.subscribe(fn)`, `m.actors`, `m.spawn(child, { id })`,
-`m.sendTo(id, event)`, `this.sendParent(event)`, `this.emit(type, payload)` / `m.on(type, fn)`.
+`m.sendTo(id, event)`, `this.sendParent(event)`, `this.emit(type, payload)` / `m.on(type, fn)`,
+`await waitFor(m, pred, { timeout })`, `await toPromise(m)`.
 
 ## Ember
 
