@@ -148,10 +148,9 @@ packages/
   interop/       @switchyard/interop     xstate JSON and SCXML import/export, plus the codegen
   test/          @switchyard/test        clock, matchers, coverage, and model-based paths
   harnessed/     @switchyard/harnessed   MBT on harnessed
-  inspector/     @switchyard/inspector   Stately inspect protocol and the Ember Inspector tab
+  inspector/     @switchyard/inspector   the Stately Inspector protocol
   eslint-plugin/ @switchyard/eslint-plugin
-  cli/           @switchyard/cli         bin: switchyard
-  vite/          @switchyard/vite        build-time diagrams for docs
+  cli/           @switchyard/cli         bin: switchyard; /vite: build-time diagrams
   skills/        @switchyard/skills      Claude skills
 docs/site/       hand-written landing page (+ guide/ built from docs-app)
 docs-app/        Ember guide app, one live example per feature
@@ -234,8 +233,14 @@ config → decorated-class codegen, and SCXML import and export, round-tripped t
 
 ### Phase 9: Tooling
 
-`@switchyard/inspector` (Stately protocol and the Ember Inspector tab), the ESLint plugin,
-the CLI, the Vite plugin and the skills package.
+`@switchyard/inspector` (`connectInspector()` for the Stately Inspector), the ESLint plugin
+(unreachable states, unknown guards, non-exhaustive state switches), `@switchyard/cli`
+(`switchyard diagram|export|import`, with payload types read from source) and its Vite plugin
+at `@switchyard/cli/vite` (folded in: it is the CLI's renderer behind a query string), and
+`@switchyard/skills`. Dropped: an **Ember Inspector tab**, since the inspector has no public
+extension point for third-party tabs (emberjs/ember-inspector#321); `<SwitchyardDebug>` and the
+Stately Inspector cover live inspection. Deferred: a `coverage` CLI command, which needs reports
+serialized from test runs.
 
 ### Phase 10: Site and guide
 

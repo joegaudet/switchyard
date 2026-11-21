@@ -95,10 +95,17 @@ export function toDot(graph: Graph): string {
   return `${lines.join('\n')}\n`
 }
 
-/** The interface view as a Mermaid class diagram. */
-export function interfaceToMermaid(iface: MachineInterface): string {
+/**
+ * The interface view as a Mermaid class diagram. `signatures` (method name → parameter list,
+ * as the CLI reads them from source) adds payload types to the events.
+ */
+export function interfaceToMermaid(
+  iface: MachineInterface,
+  signatures: Record<string, string> = {},
+): string {
   const lines = ['classDiagram', `  class ${mid(iface.name)} {`, '    <<machine>>']
-  for (const e of iface.events) lines.push(`    +${e.name}() ${e.from.join(', ')}`)
+  for (const e of iface.events)
+    lines.push(`    +${e.name}${signatures[e.name] ?? '()'} ${e.from.join(', ')}`)
   for (const g of iface.guards) lines.push(`    -guard ${g.replace(/\s+/g, '')}`)
   for (const a of iface.actions) lines.push(`    #${a.name}() ${a.on}`)
   for (const i of iface.invokes) lines.push(`    #invoke ${i.id}`)

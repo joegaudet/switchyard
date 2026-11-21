@@ -1,0 +1,53 @@
+{
+  "name": "@switchyard/eslint-plugin",
+  "version": "0.0.0",
+  "description": "ESLint rules for Switchyard machines: unreachable states, unknown guards, non-exhaustive state switches.",
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "eslint-plugin",
+    "statechart"
+  ],
+  "license": "MIT",
+  "author": "Joe Gaudet joe@joegaudet.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joegaudet/switchyard.git",
+    "directory": "packages/eslint-plugin"
+  },
+  "homepage": "https://joegaudet.com/switchyard/",
+  "bugs": "https://github.com/joegaudet/switchyard/issues",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "peerDependencies": {
+    "eslint": ">=9"
+  },
+  "devDependencies": {
+    "eslint": "^10.15.0",
+    "typescript-eslint": "^8.73.0"
+  }
+}
