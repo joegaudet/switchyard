@@ -341,7 +341,8 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
           const result = (self as Record<string, (s: AbortSignal) => unknown> | undefined)?.[
             d.key
           ]?.(signal)
-          if (!(result instanceof Machine)) return result
+          if (!(result instanceof Machine))
+            return configured.track && result instanceof Promise ? configured.track(result) : result
           child = result
           return Machine[INTERNAL].adopt(self as Machine<unknown>, child, systemId)
         },
@@ -386,6 +387,22 @@ function rootEnum(ctor: typeof Machine, decorations: Decoration[]): EnumClass<St
  * A statechart, written as a class: `class Fetch extends Machine<FetchState>`. Decorated
  * methods are its events; `@tracked` (or plain) fields are its context. It starts on first use.
  */
+export interface Configuration {
+  /** Lets a framework track machine reads (state, matches, can, status) and re-render on change. */
+  reactivity?: { consume(machine: object): void; dirty(machine: object): void } | undefined
+  /** The clock for machines without a `static clock`. */
+  clock?: Clock | undefined
+  /** Sees every `@invoke` promise; Ember wraps it in a test waiter. Returns the promise to await. */
+  track?: (<T>(promise: Promise<T>) => Promise<T>) | undefined
+}
+
+const configured: Configuration = {}
+
+/** Process-wide adapter hooks. `@switchyard/ember` calls this on import. */
+export function configure(options: Configuration): void {
+  Object.assign(configured, options)
+}
+
 const INTERNAL = Symbol('switchyard.internal')
 
 export abstract class Machine<S = State> {
@@ -428,13 +445,14 @@ export abstract class Machine<S = State> {
       const ctor = this.constructor as typeof Machine
       this.#compiled = compile(ctor, this)
       this.#interpreter = createInterpreter(this.#compiled.config, {
-        ...(ctor.clock ? { clock: ctor.clock } : {}),
+        ...((ctor.clock ?? configured.clock) ? { clock: (ctor.clock ?? configured.clock)! } : {}),
         onUnhandled: event => {
           const message = `${ctor.name}: no transition for "${event.type}" in ${this.#describeState()}`
           if (ctor.strict) throw new Error(message)
           if (dev) console.warn(message)
         },
       })
+      this.#interpreter.subscribe(() => configured.reactivity?.dirty(this))
     }
     return this.#interpreter
   }
@@ -445,7 +463,9 @@ export abstract class Machine<S = State> {
 
   /** The current state: the root enum's value, or `{ region: value }` for parallel regions. */
   get state(): S {
+    // Start first: starting dirties, and dirtying after the read would be a render error.
     const i = this.#i
+    configured.reactivity?.consume(this)
     const { root, paths } = this.#compiled!
     const active = (states: EnumClass<State>, region?: string) =>
       (states.values as State[]).find(s =>
@@ -456,17 +476,20 @@ export abstract class Machine<S = State> {
   }
 
   get status() {
+    configured.reactivity?.consume(this)
     return this.#interpreter?.status ?? 'idle'
   }
 
   matches(state: State): boolean {
     const i = this.#i
+    configured.reactivity?.consume(this)
     return (this.#compiled!.paths.get(state) ?? []).some(p => i.matches(p))
   }
 
   /** `m.can.fetch`: whether calling `fetch()` now would take a transition. */
   get can(): Record<string, boolean> {
     const i = this.#i
+    configured.reactivity?.consume(this)
     return new Proxy(
       {},
       { get: (_t, type) => typeof type === 'string' && i.can({ type, args: [] }) },
