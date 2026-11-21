@@ -1,0 +1,55 @@
+{
+  "name": "@switchyard/inspector",
+  "version": "0.0.0",
+  "description": "Stream Switchyard machines to the Stately Inspector.",
+  "keywords": [
+    "statechart",
+    "inspector",
+    "stately"
+  ],
+  "license": "MIT",
+  "author": "Joe Gaudet joe@joegaudet.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joegaudet/switchyard.git",
+    "directory": "packages/inspector"
+  },
+  "homepage": "https://joegaudet.com/switchyard/",
+  "bugs": "https://github.com/joegaudet/switchyard/issues",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "peerDependencies": {
+    "@switchyard/core": "workspace:^",
+    "@switchyard/interop": "workspace:^"
+  },
+  "devDependencies": {
+    "@real-enums/core": "^2.2.0",
+    "@statelyai/inspect": "^0.7.2",
+    "@switchyard/core": "workspace:^",
+    "@switchyard/interop": "workspace:^"
+  }
+}
