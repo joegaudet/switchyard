@@ -6,6 +6,7 @@ export default tseslint.config(
     ignores: [
       '**/dist/**',
       '**/declarations/**',
+      '**/.generated/**',
       // Ember build tooling, kept as ember-cli generates it.
       'test-app/config/**',
       'test-app/*.{mjs,cjs}',

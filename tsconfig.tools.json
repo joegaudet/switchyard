@@ -19,5 +19,5 @@
     "packages/*/app/**/*.js",
     "packages/*/rollup.config.mjs"
   ],
-  "exclude": ["packages/*/tests/**/*.legacy.ts"]
+  "exclude": ["packages/*/tests/**/*.legacy.ts", "packages/*/tests/.generated/**"]
 }
