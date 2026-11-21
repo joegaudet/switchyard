@@ -14,14 +14,22 @@ pnpm build
 pnpm lint
 pnpm typecheck
 pnpm test
+pnpm test:ember   # QUnit in headless Chrome, through test-app/
 ```
+
+## Ember
+
+`packages/ember` is a v2 addon built with `@embroider/addon-dev`. `test-app/` compiles its
+machines with Ember's own Babel (decorator-transforms), so the legacy decorator path is tested
+there end to end, as well as in `packages/core/tests/dsl`.
 
 ## Decorators
 
 The library ships dual-mode decorators: TC39 standard (`accessor` fields, `Symbol.metadata`)
 and the legacy ones Ember apps compile with via decorator-transforms. Every decorator gets a
-test under both. Reflection (diagrams, `toGraph()`) reads a `WeakMap` registry keyed by the
-class, never `Symbol.metadata`, because legacy mode doesn't have it.
+test under both. Standard decorators record on `context.metadata`; legacy ones, which have
+no metadata, record in a `WeakMap` keyed by the prototype. `decorationsOf()` in
+`packages/core/src/machine.ts` reads both.
 
 ## Releasing
 

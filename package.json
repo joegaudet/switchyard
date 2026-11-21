@@ -9,15 +9,16 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc --build --force && pnpm -r --filter './packages/*' run build",
-    "typecheck": "tsc --build && pnpm typecheck:tools",
+    "typecheck": "tsc --build && pnpm typecheck:tools && pnpm -r --filter @switchyard/ember --filter test-app run typecheck",
     "typecheck:tools": "tsc -p tsconfig.tools.json && tsc -p tsconfig.legacy.json",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run && node --test scripts/*.test.mjs",
-    "clean": "rm -rf packages/*/dist packages/*/*.tsbuildinfo",
-    "release": "pnpm build && node scripts/publish.mjs"
+    "clean": "rm -rf packages/*/dist packages/*/declarations packages/*/*.tsbuildinfo test-app/dist",
+    "release": "pnpm build && node scripts/publish.mjs",
+    "test:ember": "pnpm --filter test-app test"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
