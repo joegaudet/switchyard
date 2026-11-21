@@ -10,6 +10,8 @@ export default tseslint.config(
       // Ember build tooling, kept as ember-cli generates it.
       'test-app/config/**',
       'test-app/*.{mjs,cjs}',
+      'docs-app/config/**',
+      'docs-app/*.{mjs,cjs}',
       '**/*.d.ts',
       '.claude/**',
       // Standalone StackBlitz apps, each with its own tooling.

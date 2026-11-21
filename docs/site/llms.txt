@@ -1,0 +1,33 @@
+# switchyard
+
+> Statecharts for Ember, written as classes. States are real-enums values (`class S extends State`,
+> `static X = S.of('x', { children, history, final })`), events are methods decorated with
+> `@transition({ from, to, guard, event })`, context is `@tracked` fields. SCXML semantics, as in
+> xstate v5: hierarchy, parallel regions (`@region`), history (`history(S.X)`), guards (getter
+> names, `and`/`or`/`not`), `@always`, `@after`, `@invoke` (AbortSignal), `spawn`, `sendTo`,
+> `sendParent`, `system`, `emit`/`on`, snapshots and restore.
+
+Rules that matter: event bodies are synchronous (async work goes in `@invoke`); an event method
+called inside an action is queued; an unhandled event warns (or throws with `static strict = true`);
+decorated methods may not be named after Machine's own members (`stop`, `send`, `state`), so use
+`@transition({ event: 'stop' }) onStop()`; Ember apps write `@is() declare x: boolean` and
+`@region(E) declare r: E` where standard decorators use `accessor`.
+
+## Docs
+
+- [Guide](https://joegaudet.com/switchyard/guide/): a live example and live chart on every page
+- [README](https://github.com/joegaudet/switchyard#readme)
+- [Plan and decisions](https://github.com/joegaudet/switchyard/blob/main/SWITCHYARD_PLAN.md)
+
+## Packages
+
+- @switchyard/core: Machine, State, decorators, createInterpreter, configure, bindField
+- @switchyard/ember: machine(owner, m), send/matches/can helpers, test waiters, SwitchyardAnnouncer; /resource (machineResource); /debug (SwitchyardDebug)
+- @switchyard/graph: toGraph, toMermaid, toDot, toSvg, describeInterface, topology; /viewer (<switchyard-diagram>)
+- @switchyard/test: shortestPaths, simplePaths, coverage, matchers (toBeIn), setupMachineAssertions, useManualClock
+- @switchyard/harnessed: modelTests
+- @switchyard/interop: toXState, fromXState, toClassSource, toScxml, fromScxml
+- @switchyard/inspector: connectInspector (Stately Inspector)
+- @switchyard/cli: `switchyard diagram|export|import`; /vite
+- @switchyard/eslint-plugin: no-unreachable-state, no-unknown-guard, exhaustive-state-switch
+- @switchyard/skills: `npx switchyard-skills` installs the authoring skill

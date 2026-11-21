@@ -1,0 +1,93 @@
+<!doctype html>
+<!--
+  Source for site/social-card.png (switchyard), the image link previews show (og:image). Not deployed.
+  Regenerate after editing (1200x630 is what Slack, X, LinkedIn and iMessage expect):
+
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars \
+    --window-size=1200,630 --screenshot=docs/site/social-card.png "file://$PWD/docs/social-card.html"
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&display=swap"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+      body {
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+        padding: 72px 80px;
+        background:
+          radial-gradient(38rem 26rem at 82% 40%, rgb(79 70 229 / 0.4), transparent 70%), #0b0b14;
+        color: #f8fafc;
+        font-family: Inter, system-ui, sans-serif;
+        display: flex;
+        flex-direction: column;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        font-size: 34px;
+        font-weight: 700;
+      }
+      h1 {
+        margin-top: 56px;
+        font-size: 76px;
+        font-weight: 800;
+        line-height: 1.04;
+        letter-spacing: -0.03em;
+      }
+      .gradient {
+        background: linear-gradient(90deg, #818cf8, #fbbf24);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .chips {
+        margin-top: auto;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .chips span {
+        padding: 8px 18px;
+        border: 1px solid rgb(255 255 255 / 0.18);
+        border-radius: 999px;
+        background: rgb(255 255 255 / 0.04);
+        color: #cbd5e1;
+        font-size: 22px;
+        font-weight: 500;
+      }
+      .wire {
+        position: absolute;
+        top: 80px;
+        right: 80px;
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 24px;
+        color: #fbbf24;
+        text-align: right;
+        line-height: 1.7;
+      }
+      .wire b {
+        color: #818cf8;
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="brand"><img src="site/logo.svg" width="56" height="56" alt="" />switchyard</div>
+    <div class="wire">fetch.retry() → <b>FetchState.Loading</b></div>
+    <h1>Statecharts for Ember,<br />written as <span class="gradient">classes</span>.</h1>
+    <div class="chips">
+      <span>real-enums states</span><span>decorated events</span><span>tracked context</span
+      ><span>xstate semantics</span><span>live diagrams</span>
+    </div>
+  </body>
+</html>

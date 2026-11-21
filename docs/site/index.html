@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>switchyard</title>
+    <meta
+      name="description"
+      content="Statecharts for Ember, written as classes. States are real-enums values, events are decorated methods, context is tracked fields. Everything xstate does, on the same semantics, with diagrams drawn from the code."
+    />
+    <link rel="canonical" href="https://joegaudet.com/switchyard/" />
+    <!-- Link previews (Slack, X, LinkedIn, iMessage). The card's source is docs/social-card.html. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="switchyard" />
+    <meta property="og:title" content="switchyard: statecharts for Ember, written as classes" />
+    <meta
+      property="og:description"
+      content="States are real enums, events are methods, context is tracked fields. Hierarchy, parallel regions, history, actors, diagrams from the code."
+    />
+    <meta property="og:url" content="https://joegaudet.com/switchyard/" />
+    <meta property="og:image" content="https://joegaudet.com/switchyard/social-card.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="switchyard: statecharts for Ember, written as classes."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.0.6/css/pico.min.css"
+    />
+    <!-- Code blocks are dark in both schemes, like an editor, so one theme. -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap"
+    />
+    <link rel="stylesheet" href="site.css" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" type="text/plain" href="llms.txt" title="llms.txt" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <style>
+      .chart {
+        margin: 0;
+        overflow-x: auto;
+        border-radius: 0.75rem;
+        /* The chart follows the colour scheme itself; the panel follows the page. */
+        background: var(--pico-card-background-color);
+        border: 1px solid var(--pico-muted-border-color);
+        padding: 1rem;
+      }
+      .chart img {
+        min-width: 44rem;
+      }
+      .chart figcaption {
+        color: var(--pico-muted-color);
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+        gap: var(--space-gap);
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="site-nav">
+      <div class="container">
+        <ul>
+          <li class="brand">
+            <a href="https://joegaudet.com/" class="brand-link"
+              ><img src="logo.svg" alt="" width="28" height="28" /><strong>switchyard</strong></a
+            >
+          </li>
+        </ul>
+        <ul>
+          <li class="wide-only"><a href="#why">Why</a></li>
+          <li><a href="guide/">Guide</a></li>
+          <li><a href="#ember">Ember</a></li>
+          <li class="wide-only"><a href="#diagrams">Diagrams</a></li>
+          <li class="wide-only"><a href="#testing">Testing</a></li>
+          <li><a href="https://github.com/joegaudet/switchyard">GitHub</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <header class="hero-band">
+      <div class="container">
+        <div class="hero-copy">
+          <p class="eyebrow">Statecharts for Ember</p>
+          <h1>Your machines, written as <span class="gradient-text">classes</span>.</h1>
+          <p class="hero-sub">
+            States are <a href="https://joegaudet.com/real-enums/">real-enums</a> values, events are
+            decorated methods, context is <code>@tracked</code> fields. Everything xstate does, on
+            the same semantics: hierarchy, parallel regions, history, guards, timers, invoked and
+            spawned actors. Templates track it, tests wait for it, and the diagram is drawn from the
+            code.
+          </p>
+          <div class="hero-actions">
+            <a href="guide/" role="button">Get started</a>
+            <a href="https://github.com/joegaudet/switchyard" role="button" class="ghost">GitHub</a>
+          </div>
+          <div class="install">
+            <span class="prompt" aria-hidden="true">$</span>
+            <code>npm i @switchyard/core @switchyard/ember @real-enums/core</code>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section id="why">
+        <p class="eyebrow">Why</p>
+        <h2>A statechart that reads like the rest of your app</h2>
+        <figure class="chart">
+          <img
+            src="fetch.svg"
+            alt="The Fetch machine's statechart: idle, loading (first, retrying, history), done, failed."
+          />
+          <figcaption>
+            This is the machine below, drawn by <code>npx switchyard diagram fetch.ts</code>. In
+            your app, <code>&lt;SwitchyardDebug&gt;</code> draws it live.
+          </figcaption>
+        </figure>
+        <pre><code class="language-typescript">class FetchState extends State {
+  static Idle = FetchState.of('idle')
+  static Loading = FetchState.of('loading', { children: Attempt, history: 'shallow' })
+  static Done = FetchState.of('done')
+  static Failed = FetchState.of('failed')
+}
+
+class Fetch extends Machine&lt;FetchState&gt; {
+  @tracked user?: string
+  @tracked retries = 0
+
+  get hasRetriesLeft() {
+    return this.retries &lt; 3
+  }
+
+  @transition({ from: FetchState.Idle, to: FetchState.Loading })
+  fetch() {}
+
+  @transition({ from: FetchState.Failed, to: history(FetchState.Loading), guard: 'hasRetriesLeft' })
+  retry() {
+    this.retries++
+  }
+
+  @invoke(FetchState.Loading, { onDone: FetchState.Done, onError: FetchState.Failed })
+  async load(signal: AbortSignal) {
+    this.user = await api.get(signal)
+  }
+
+  @after(3000, { from: Attempt.First, to: Attempt.Retrying })
+  slow() {}
+}</code></pre>
+        <div class="cards">
+          <article>
+            <h3>States are real enums</h3>
+            <p>
+              Labels, icons and <code>@is()</code> predicates live on the state. Nested states are
+              their own enums, so each level stays exhaustive.
+            </p>
+          </article>
+          <article>
+            <h3>Events are methods</h3>
+            <p>
+              <code>fetch.retry()</code> sends the event, typed by its signature. Guards are getters
+              over your tracked fields. <code>can</code> knows what is allowed now.
+            </p>
+          </article>
+          <article>
+            <h3>The semantics are xstate's</h3>
+            <p>
+              Run-to-completion on the SCXML algorithm, checked against xstate itself. Export to
+              xstate JSON or SCXML, import from them, or generate a class from an xstate config.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="ember">
+        <p class="eyebrow">Ember</p>
+        <h2>Tracked, owned, and waited for</h2>
+        <pre><code class="language-handlebars">import { machine, send, can } from '@switchyard/ember'
+
+export default class UserCard extends Component {
+  fetch = machine(this, new Fetch()) // stops when the component is destroyed
+
+  &lt;template&gt;
+    {{#if this.fetch.state.isLoading}}Loading…{{/if}}
+    &lt;button disabled={{if (can this.fetch "retry") false true}}
+            {{on "click" (send this.fetch "retry")}}&gt;Retry&lt;/button&gt;
+  &lt;/template&gt;
+}</code></pre>
+        <p>
+          Templates re-render on transitions. Services hold app-wide machines.
+          <code>await settled()</code> waits for invokes and timers.
+          <code>&lt;SwitchyardAnnouncer&gt;</code> tells screen readers what changed. Snapshots
+          restore across reloads, and <code>bindField</code> puts a state in a record or the URL.
+          <a href="guide/#/ember">In Ember →</a>
+        </p>
+      </section>
+
+      <section id="diagrams">
+        <p class="eyebrow">Diagrams</p>
+        <h2>The chart is the code</h2>
+        <p>
+          Mermaid for READMEs and pull requests, DOT, SVG laid out by ELK, a class-interface view
+          with payload types, the live actor tree, and a live in-app view that lights up the active
+          states. From the command line, at build time with the Vite plugin, or in your app.
+          <a href="guide/#/diagrams">Diagrams →</a>
+        </p>
+      </section>
+
+      <section id="testing">
+        <p class="eyebrow">Testing</p>
+        <h2>The machine already knows what to test</h2>
+        <p>
+          A manual clock for timers, <code>toBeIn</code> and <code>assert.machineIn</code>, a
+          coverage report of states and transitions no test reached, and model-based tests that walk
+          every path and drive the real UI through
+          <a href="https://joegaudet.com/harnessed/">harnessed</a>.
+          <a href="guide/#/testing">Testing →</a>
+        </p>
+      </section>
+
+      <section id="packages">
+        <p class="eyebrow">Packages</p>
+        <h2>Take what you need</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Package</th>
+              <th>For</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>@switchyard/core</code></td>
+              <td>Machines, decorators, the interpreter, snapshots</td>
+            </tr>
+            <tr>
+              <td><code>@switchyard/ember</code></td>
+              <td>
+                Tracking, lifetimes, helpers, waiters, <code>&lt;SwitchyardAnnouncer&gt;</code>,
+                <code>&lt;SwitchyardDebug&gt;</code>
+              </td>
+            </tr>
+            <tr>
+              <td><code>@switchyard/graph</code></td>
+              <td>Mermaid, DOT, SVG, interface and actor views, the live viewer</td>
+            </tr>
+            <tr>
+              <td><code>@switchyard/test</code></td>
+              <td>Paths, coverage, matchers, a manual clock</td>
+            </tr>
+            <tr>
+              <td><code>@switchyard/harnessed</code></td>
+              <td>Model-based tests through harnessed</td>
+            </tr>
+            <tr>
+              <td><code>@switchyard/interop</code></td>
+              <td>xstate JSON and SCXML, both ways, and codegen</td>
+            </tr>
+            <tr>
+              <td><code>@switchyard/inspector</code></td>
+              <td>The Stately Inspector</td>
+            </tr>
+            <tr>
+              <td><code>@switchyard/cli</code></td>
+              <td><code>switchyard diagram|export|import</code>, and a Vite plugin</td>
+            </tr>
+            <tr>
+              <td><code>@switchyard/eslint-plugin</code></td>
+              <td>Unreachable states, unknown guards, non-exhaustive switches</td>
+            </tr>
+            <tr>
+              <td><code>@switchyard/skills</code></td>
+              <td>The authoring skill for coding agents</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+
+    <footer class="container">
+      <small>
+        MIT © Joe Gaudet ·
+        <a href="guide/">Guide</a> ·
+        <a href="https://github.com/joegaudet/switchyard#readme">README</a> ·
+        <a href="llms.txt">llms.txt</a> ·
+        <a href="https://github.com/joegaudet/switchyard/blob/main/CONTRIBUTING.md">Contributing</a>
+      </small>
+      <p class="family">
+        <small>
+          More open source from <a href="https://joegaudet.com/">Joe Gaudet</a>:
+          <a href="https://joegaudet.com/harnessed/">harnessed</a> ·
+          <a href="https://joegaudet.com/real-enums/">real-enums</a> ·
+          <a href="https://joegaudet.com/ember-formwright/">Formwright</a> ·
+          <a href="https://joegaudet.com/switchyard/" aria-current="page">switchyard</a>
+        </small>
+      </p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup-templating.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-handlebars.min.js"></script>
+  </body>
+</html>
