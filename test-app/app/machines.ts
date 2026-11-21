@@ -52,3 +52,17 @@ export class Session extends Machine<SessionState> {
     this.user = undefined
   }
 }
+
+export class OrderState extends State {
+  static Pending = OrderState.of('pending')
+  static Shipped = OrderState.of('shipped')
+  static Delivered = OrderState.of('delivered')
+}
+
+export class OrderFlow extends Machine<OrderState> {
+  @transition({ from: OrderState.Pending, to: OrderState.Shipped })
+  ship() {}
+
+  @transition({ from: OrderState.Shipped, to: OrderState.Delivered })
+  deliver() {}
+}

@@ -96,6 +96,14 @@ export interface Clock {
   clearTimeout(handle: unknown): void
 }
 
+/** A machine's resting state, as JSON: the active leaves, and what each history state recorded. */
+export interface Snapshot {
+  status?: Status
+  /** Active state paths. Ancestors, default descendants and missing regions are filled in. */
+  configuration: string[]
+  history?: Record<string, string[]>
+}
+
 export type InspectionEvent =
   | { type: '@xstate.event'; event: EventObject }
   | {
@@ -121,6 +129,12 @@ export interface Interpreter {
   stop(): this
   /** Called after every macrostep that took a transition. Returns an unsubscribe function. */
   subscribe(listener: (interpreter: Interpreter) => void): () => void
+  snapshot(): Required<Snapshot>
+  /**
+   * Replaces the configuration with `snapshot`'s, running no entry or exit actions. Running
+   * actors and timers stop; the restored states' timers and invokes start. Starts an idle machine.
+   */
+  restore(snapshot: Snapshot): this
   /** Delivers an event to an invoked actor by id. False when no such actor is running. */
   sendTo(id: string, event: EventObject): boolean
   /** Streams events, microsteps and snapshots. Returns an unsubscribe function. */
@@ -179,6 +193,16 @@ export function createInterpreter(
   options: InterpreterOptions = {},
 ): Interpreter {
   const root = build(config)
+  const nodes = new Map<string, Node>()
+  ;(function index(n: Node) {
+    nodes.set(n.id, n)
+    n.children.forEach(index)
+  })(root)
+  const nodeAt = (path: string) => {
+    const n = path ? nodes.get(path) : undefined
+    if (!n || n.type === 'history') throw new Error(`Snapshot names unknown state "${path}"`)
+    return n
+  }
   const configuration = new Set<Node>()
   const historyValue = new Map<Node, Node[]>()
   const internalQueue: EventObject[] = []
@@ -272,6 +296,57 @@ export function createInterpreter(
       status = 'stopped'
       if (wasActive && !processing) exitAll()
       else halt()
+      return this
+    },
+    snapshot() {
+      return {
+        status,
+        configuration: [...configuration]
+          .filter(isAtomic)
+          .sort(byDocumentOrder)
+          .map(n => n.id),
+        history: Object.fromEntries([...historyValue].map(([h, ns]) => [h.id, ns.map(n => n.id)])),
+      }
+    },
+    restore(snap) {
+      const leaves = snap.configuration.map(nodeAt)
+      const history = Object.entries(snap.history ?? {}).map(([id, paths]) => {
+        const h = nodes.get(id)
+        if (h?.type !== 'history') throw new Error(`Snapshot names unknown history state "${id}"`)
+        return [h, paths.map(nodeAt)] as const
+      })
+      const toEnter = new Set<Node>()
+      historyValue.clear()
+      for (const [h, ns] of history) historyValue.set(h, [...ns])
+      for (const n of leaves) {
+        addDescendantStatesToEnter(n, toEnter)
+        addAncestorStatesToEnter(n, root, toEnter)
+      }
+      if (root.type === 'parallel') addMissingRegions(root, toEnter)
+      for (const c of [root, ...toEnter]) {
+        if (c.type !== 'compound') continue
+        const kids = c.children.filter(k => toEnter.has(k))
+        if (kids.length < 2) continue
+        const from = (k: Node) =>
+          snap.configuration.find((_p, i) => leaves[i] === k || isDescendant(leaves[i]!, k))
+        throw new Error(`Snapshot has both "${from(kids[0]!)}" and "${from(kids[1]!)}" active`)
+      }
+      halt()
+      configuration.clear()
+      status = snap.status === 'done' ? 'done' : 'active'
+      for (const n of [...toEnter].sort(byDocumentOrder)) {
+        configuration.add(n)
+        if (status === 'active') activate(n)
+      }
+      processing = true
+      try {
+        endMacrostep()
+        notify()
+        drain()
+      } finally {
+        processing = false
+        if (stopped()) exitAll()
+      }
       return this
     },
     subscribe(listener) {
@@ -386,6 +461,18 @@ export function createInterpreter(
     } else if (typeof result === 'function') {
       stop = result as () => void
     }
+  }
+
+  // A state's timers start now; its invokes at the end of the macrostep.
+  function activate(s: Node) {
+    if (s.invokes.length) toInvoke.add(s)
+    if (s.delays.length)
+      timers.set(
+        s,
+        s.delays.map(ms =>
+          clock.setTimeout(() => interpreter.send({ type: afterEvent(ms, s) }), ms),
+        ),
+      )
   }
 
   function cancel(s: Node) {
@@ -531,14 +618,7 @@ export function createInterpreter(
     for (const s of [...toEnter].sort(byDocumentOrder)) {
       if (stopped()) return
       configuration.add(s)
-      if (s.invokes.length) toInvoke.add(s)
-      if (s.delays.length)
-        timers.set(
-          s,
-          s.delays.map(ms =>
-            clock.setTimeout(() => interpreter.send({ type: afterEvent(ms, s) }), ms),
-          ),
-        )
+      activate(s)
       run(s.entry)
       if (s.type !== 'final') continue
       const parent = s.parent!
