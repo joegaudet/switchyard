@@ -104,3 +104,21 @@ describe('actors', () => {
     expect([...m.actors.keys()]).toEqual(['a.txt'])
   })
 })
+
+describe('spawn notifies', () => {
+  it('subscribers and reactivity, since the actor list changed', async () => {
+    const { Uploader } = await import('./machines.standard.js')
+    const { configure } = await import('../../src/index.js')
+    const dirtied: unknown[] = []
+    configure({ reactivity: { consume: () => {}, dirty: m => void dirtied.push(m) } })
+    const m = new Uploader().start()
+    let calls = 0
+    m.subscribe(() => void calls++)
+    const before = calls
+    dirtied.length = 0
+    m.add('b.txt')
+    expect(calls).toBe(before + 1)
+    expect(dirtied).toContain(m)
+    configure({ reactivity: undefined })
+  })
+})
