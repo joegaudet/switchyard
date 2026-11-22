@@ -1,5 +1,13 @@
 # @switchyard-ts/core
 
+## 0.4.0
+
+### Minor Changes
+
+- ca2ba5e: `emit()` and `on()` take the method an emitted event is named for: `this.emit(this.factClosed)` and
+  `m.on(m.factClosed, fn)` deliver and listen for `factClosed`, so TypeScript checks the name. Strings
+  keep working.
+
 ## 0.3.0
 
 ### Minor Changes
