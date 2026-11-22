@@ -24,6 +24,7 @@ import {
   type XStateNode,
 } from '@switchyard-ts/interop'
 
+/** Options for {@link loadMachines} and {@link render}. */
 export interface LoadOptions {
   /** Compile decorators with legacy semantics, as Ember apps do. */
   legacy?: boolean
@@ -100,6 +101,11 @@ export async function eventSignatures(
   return out
 }
 
+/**
+ * What {@link render} produces: a chart (`mermaid`, `dot`, `svg`), the machine's interface as a
+ * Mermaid class diagram with its events' payload types (`interface`), or a definition for
+ * another tool (`xstate` JSON, `scxml`).
+ */
 export type DiagramFormat = 'mermaid' | 'dot' | 'svg' | 'interface' | 'xstate' | 'scxml'
 
 /** One machine of a module as text: a diagram, or xstate/SCXML. */

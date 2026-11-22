@@ -6,11 +6,13 @@ import { states, toGraph, type MachineClass } from '@switchyard-ts/graph'
 
 export { manualClock }
 
+/** An event for the path search to try, with the arguments to send it with. */
 export interface ModelEvent {
   type: string
   args?: unknown[]
 }
 
+/** One event on a {@link ModelPath}, and where it left the machine. */
 export interface PathStep {
   event: string
   args: unknown[]
@@ -18,12 +20,14 @@ export interface PathStep {
   state: string[]
 }
 
+/** A sequence of events from a fresh machine, and the state it ends in. */
 export interface ModelPath {
   /** Active leaf states at the end of the path. */
   state: string[]
   steps: PathStep[]
 }
 
+/** Options for {@link shortestPaths} and {@link simplePaths}. */
 export interface PathOptions<M extends Machine<unknown>> {
   /** Events to try, with arguments. Defaults to every event method of the machine's class. */
   events?: (string | ModelEvent)[]
@@ -115,9 +119,11 @@ export function simplePaths<M extends Machine<unknown>>(
   return out
 }
 
+/** The states and transitions reached so far, and the ones that were not. */
 export interface CoverageReport {
   states: { covered: number; total: number; missing: string[] }
   transitions: { covered: number; total: number; missing: string[] }
+  /** The counts, then one line per state not reached and transition not taken. */
   toString(): string
 }
 
@@ -175,6 +181,7 @@ export function coverage(Class: MachineClass) {
         offSubscribe()
       }
     },
+    /** What the tracked machines have reached so far. */
     report(): CoverageReport {
       const transitions = [...byKey.values()].flat()
       const report = {
@@ -216,15 +223,18 @@ const where = (m: Machine<unknown>) => m.snapshot().configuration.join(', ') || 
  * exact type parameters, e.g. vitest's `Matchers<R, T>`), or cast: `expect(m) as SwitchyardMatchers<void>`.
  */
 export interface SwitchyardMatchers<R> {
+  /** Passes when `machine.matches(state)`. */
   toBeIn(state: State): R
 }
 
 /** Vitest/Jest matchers: `expect.extend(matchers)`, then `expect(m).toBeIn(State.X)`. */
 export const matchers = {
+  /** Passes when the machine is in `state`; the message names the states it is in. */
   toBeIn(received: Machine<unknown>, state: State) {
     const pass = received.matches(state)
     return {
       pass,
+      /** Why it failed, or for `.not`, why it passed. */
       message: () =>
         `expected ${received.constructor.name} ${pass ? 'not ' : ''}to be in ${state.value}, but it is in ${where(received)}`,
     }
@@ -238,7 +248,10 @@ interface PushResult {
 /** Adds `assert.machineIn(machine, state, message?)` to a QUnit `assert`. Returns it. */
 export function setupMachineAssertions<A extends PushResult>(
   assert: A,
-): A & { machineIn(machine: Machine<unknown>, state: State, message?: string): void } {
+): A & {
+  /** Asserts the machine is in `state`; on failure QUnit shows the states it is in. */
+  machineIn(machine: Machine<unknown>, state: State, message?: string): void
+} {
   return Object.assign(assert, {
     machineIn(machine: Machine<unknown>, state: State, message?: string) {
       assert.pushResult({

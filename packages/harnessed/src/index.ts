@@ -4,6 +4,7 @@
 import type { Machine } from '@switchyard-ts/core'
 import { shortestPaths, simplePaths, type ModelPath } from '@switchyard-ts/test'
 
+/** Options for {@link modelTests}: the model, and how to drive and check the UI through a harness. */
 export interface ModelTestOptions<M extends Machine<unknown>, H> {
   /** A fresh model machine. */
   machine: () => M
@@ -15,14 +16,20 @@ export interface ModelTestOptions<M extends Machine<unknown>, H> {
   paths?: 'shortest' | 'simple'
 }
 
+/** One generated test: register `name` and `run` with the test runner. */
 export interface ModelTest<H> {
   name: string
   path: ModelPath
+  /** Checks the start state, then fires each event of the path and checks the state after it. */
   run(harness: H): Promise<void>
 }
 
 const key = (state: string[]) => state.join(' ')
 
+/**
+ * One test per path through the model machine. Throws up front if an event on any path has no
+ * driver in `events`, or a state it reaches has no check in `states`.
+ */
 export function modelTests<M extends Machine<unknown>, H>(
   options: ModelTestOptions<M, H>,
 ): ModelTest<H>[] {

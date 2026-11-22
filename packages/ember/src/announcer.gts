@@ -22,6 +22,10 @@ const hidden = htmlSafe(
   'position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0',
 )
 
+/**
+ * `<SwitchyardAnnouncer @machine={{m}} @messages={{hash loading="Loading…"}} />`: a visually
+ * hidden live region announcing the message for the deepest active state that has one.
+ */
 export const SwitchyardAnnouncer: TOC<{
   Element: HTMLDivElement
   Args: { machine: Machine<unknown>; messages: Record<string, string> }

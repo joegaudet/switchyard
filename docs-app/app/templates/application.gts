@@ -14,6 +14,7 @@ const WIDE = typeof matchMedia === 'function' && matchMedia('(min-width: 861px)'
     <nav aria-label="Site">
       <a href="../">Home</a>
       <LinkTo @route="demos">Demos</LinkTo>
+      <a href="../api/">API</a>
       <a href="https://github.com/joegaudet/switchyard">GitHub</a>
     </nav>
   </header>

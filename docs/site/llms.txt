@@ -16,6 +16,12 @@ decorated methods may not be named after Machine's own members (`stop`, `send`, 
 ## Docs
 
 - [Guide](https://joegaudet.com/switchyard/guide/): a live example and live chart on every page
+- [API reference](https://joegaudet.com/switchyard/api/): every export of every package, from
+  the latest release
+- [llms-full.txt](https://joegaudet.com/switchyard/api/llms-full.txt): this file followed by the
+  whole API reference as Markdown
+- [api.json](https://joegaudet.com/switchyard/api/api.json): the API reference as TypeDoc's JSON
+  model, for tools
 - [README](https://github.com/joegaudet/switchyard#readme)
 - [Plan and decisions](https://github.com/joegaudet/switchyard/blob/main/SWITCHYARD_PLAN.md)
 

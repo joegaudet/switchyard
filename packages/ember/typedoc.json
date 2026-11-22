@@ -1,0 +1,8 @@
+{
+  "tsconfig": "tsconfig.declarations.json",
+  "entryPoints": [
+    "declarations/index.d.ts",
+    "declarations/resource.d.ts",
+    "declarations/debug.d.ts"
+  ]
+}
