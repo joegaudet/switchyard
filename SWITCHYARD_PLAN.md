@@ -99,13 +99,13 @@ class Fetch extends Machine<FetchState> {
 
 ### Persistence, devtools and diagrams
 
-| #   | Decision                                                                                                                                                                                                                        |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 25  | Persistence: `snapshot()`/`restore()` (enums serialized through real-enums codecs), a WarpDrive field adapter (a record attribute is a machine's state), query-param sync, and Standard Schema validation of restored snapshots |
-| 26  | Devtools: an `inspect()` event stream, Stately Inspector protocol compatibility, an Ember Inspector tab, and a `<SwitchyardDebug @machine=… />` live-diagram overlay                                                            |
-| 29  | Diagrams: the statechart (with `event [guard] / action` labels), a class-interface view (events with payload types, context, guards, actions, actors), actor topology, and a live, animated view                                |
-| 30  | Diagram formats: Mermaid, SVG laid out with ELK, DOT, and an interactive web component                                                                                                                                          |
-| 31  | Diagrams come from runtime reflection (`Machine.toGraph()` reading decorator metadata) and from a build-time CLI/Vite plugin. The interface view uses the TS compiler API for payload types                                     |
+| #   | Decision                                                                                                                                                                                                                                                                                              |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 25  | Persistence: `snapshot()`/`restore()` (enums serialized through real-enums codecs), a record attribute or query param bound to a machine's state (`bindField`, Phase 5: one core function covers both, so there is no `@switchyard/warp-drive`), and Standard Schema validation of restored snapshots |
+| 26  | Devtools: an `inspect()` event stream, Stately Inspector protocol compatibility, an Ember Inspector tab, and a `<SwitchyardDebug @machine=… />` live-diagram overlay                                                                                                                                  |
+| 29  | Diagrams: the statechart (with `event [guard] / action` labels), a class-interface view (events with payload types, context, guards, actions, actors), actor topology, and a live, animated view                                                                                                      |
+| 30  | Diagram formats: Mermaid, SVG laid out with ELK, DOT, and an interactive web component                                                                                                                                                                                                                |
+| 31  | Diagrams come from runtime reflection (`Machine.toGraph()` reading decorator metadata) and from a build-time CLI/Vite plugin. The interface view uses the TS compiler API for payload types                                                                                                           |
 
 ### Testing and tooling
 
@@ -149,7 +149,6 @@ packages/
   interop/       @switchyard/interop     xstate JSON and SCXML import/export, plus the codegen
   test/          @switchyard/test        clock, matchers, coverage, and model-based paths
   harnessed/     @switchyard/harnessed   MBT on harnessed
-  warp-drive/    @switchyard/warp-drive  machine-backed record fields
   inspector/     @switchyard/inspector   Stately inspect protocol and the Ember Inspector tab
   eslint-plugin/ @switchyard/eslint-plugin
   cli/           @switchyard/cli         bin: switchyard
@@ -212,8 +211,8 @@ This phase adds `test-app/`.
 
 ### Phase 5: Persistence
 
-`snapshot()`/`restore()` with codecs and Standard Schema, query-param sync, and
-`@switchyard/warp-drive`.
+`snapshot()`/`restore()` with Standard Schema validation, and `bindField()` for record
+attributes (mirror) and query params (accessor).
 
 ### Phase 6: Diagrams
 

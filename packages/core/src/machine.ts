@@ -6,6 +6,8 @@ import type { EnumClass } from '@real-enums/core'
 import type { State } from './state.js'
 import {
   createInterpreter,
+  manualClock,
+  type Snapshot,
   type Action,
   type Clock,
   type InspectionEvent,
@@ -403,6 +405,74 @@ export function configure(options: Configuration): void {
   Object.assign(configured, options)
 }
 
+/** A machine snapshot: the interpreter's, plus the `static persist` fields. JSON-safe if they are. */
+export interface MachineSnapshot extends Snapshot {
+  context?: Record<string, unknown>
+}
+
+/** The Standard Schema interface (https://standardschema.dev), as `Machine.schema()` returns it. */
+export interface StandardSchemaV1<Input = unknown, Output = Input> {
+  readonly '~standard': {
+    readonly version: 1
+    readonly vendor: string
+    validate(
+      value: unknown,
+    ): { readonly value: Output } | { readonly issues: readonly { readonly message: string }[] }
+    readonly types?: { readonly input: Input; readonly output: Output }
+  }
+}
+
+// Restores into a throwaway interpreter with no machine behind it: actions and invokes are
+// no-ops there, and its timers are on a clock that never runs.
+function checkSnapshot(ctor: typeof Machine, value: unknown): string | undefined {
+  const config = (value as Snapshot | null)?.configuration
+  if (!Array.isArray(config) || !config.every(p => typeof p === 'string'))
+    return 'A snapshot is an object with a configuration: string[]'
+  const probe = createInterpreter(compile(ctor, undefined).config, { clock: manualClock() })
+  try {
+    probe.restore(value as Snapshot)
+  } catch (error) {
+    return (error as Error).message
+  } finally {
+    probe.stop()
+  }
+  return undefined
+}
+
+/**
+ * Keeps a machine's state in a string property, as active state paths separated by spaces
+ * (`'loading.retrying'`). `mirror` (the default) restores from `target[key]` once, then writes
+ * every transition back: a record attribute. `accessor` makes `target[key]` a getter/setter over
+ * the machine: a query param. Writing restores the machine without running actions, and
+ * resets its history. Returns a function that unbinds.
+ */
+export function bindField(
+  machine: Machine<unknown>,
+  target: object,
+  key: string,
+  { mode = 'mirror' }: { mode?: 'mirror' | 'accessor' } = {},
+): () => void {
+  const t = target as Record<string, unknown>
+  const read = () => machine.snapshot().configuration.join(' ')
+  const write = (value: unknown) => {
+    if (typeof value === 'string' && value) machine.restore({ configuration: value.split(' ') })
+  }
+  if (mode === 'accessor') {
+    Object.defineProperty(target, key, {
+      configurable: true,
+      enumerable: true,
+      get: read,
+      set: write,
+    })
+    return () => void delete t[key]
+  }
+  write(t[key])
+  return machine.subscribe(() => {
+    const value = read()
+    if (t[key] !== value) t[key] = value
+  })
+}
+
 const INTERNAL = Symbol('switchyard.internal')
 
 export abstract class Machine<S = State> {
@@ -412,6 +482,8 @@ export abstract class Machine<S = State> {
   static states?: EnumClass<State>
   /** Timers for `@after`. Tests assign `manualClock()`; it is inherited by subclasses. */
   static clock?: Clock
+  /** Context fields `snapshot()` captures and `restore()` sets back. */
+  static persist?: string[]
 
   #interpreter?: Interpreter
   #compiled?: Compiled
@@ -432,6 +504,44 @@ export abstract class Machine<S = State> {
 
   static toConfig(): MachineConfig {
     return compile(this, undefined).config
+  }
+
+  /** A Standard Schema that accepts snapshots this class can restore. */
+  static schema(): StandardSchemaV1<unknown, MachineSnapshot> {
+    return {
+      '~standard': {
+        version: 1,
+        vendor: 'switchyard',
+        validate: value => {
+          const message = checkSnapshot(this, value)
+          return message ? { issues: [{ message }] } : { value: value as MachineSnapshot }
+        },
+      },
+    }
+  }
+
+  snapshot(): MachineSnapshot {
+    const i = this.#i
+    configured.reactivity?.consume(this)
+    const { persist } = this.constructor as typeof Machine
+    const snapshot: MachineSnapshot = i.snapshot()
+    if (persist)
+      snapshot.context = Object.fromEntries(
+        persist.map(k => [k, (this as unknown as Record<string, unknown>)[k]]),
+      )
+    return snapshot
+  }
+
+  /** Puts the machine in `snapshot`'s state without running actions. Throws if it does not fit. */
+  restore(snapshot: MachineSnapshot): this {
+    const ctor = this.constructor as typeof Machine
+    const message = checkSnapshot(ctor, snapshot)
+    if (message) throw new Error(`${ctor.name}: ${message}`)
+    for (const k of ctor.persist ?? [])
+      if (snapshot.context && k in snapshot.context)
+        (this as unknown as Record<string, unknown>)[k] = snapshot.context[k]
+    this.#create().restore(snapshot)
+    return this
   }
 
   get #i(): Interpreter {
