@@ -19,6 +19,7 @@ export {
   waitFor,
   type Configuration,
   type Can,
+  type CanEnter,
   type StatesOf,
   type GuardRef,
   type InvokeOptions,

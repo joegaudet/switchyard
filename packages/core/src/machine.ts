@@ -476,8 +476,11 @@ export type StatesOf<S> = unknown extends S
 /** `m.can(State, { via })` and `m.can.event`; see {@link Machine.can}. */
 export type Can<S = unknown> = CanEnter<S> & { readonly [event: string]: boolean }
 
-// Taken from a method so the parameter stays bivariant: a Machine<FetchState> is a Machine<unknown>.
-type CanEnter<S> = {
+/**
+ * `m.can(FetchState.Loading, { via })`: whether an event would enter the state now.
+ * Taken from a method so the parameter stays bivariant: a Machine<FetchState> is a Machine<unknown>.
+ */
+export type CanEnter<S> = {
   can(state: StatesOf<S>, options?: { via?: (...args: never[]) => unknown }): boolean
 }['can']
 
