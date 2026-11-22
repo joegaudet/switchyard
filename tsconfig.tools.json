@@ -17,5 +17,6 @@
     "scripts/*.mjs",
     "packages/*/addon-main.cjs",
     "packages/*/app/**/*.js"
-  ]
+  ],
+  "exclude": ["packages/*/tests/**/*.legacy.ts"]
 }

@@ -10,7 +10,7 @@
   "scripts": {
     "build": "tsc --build --force && pnpm -r --filter './packages/*' run build",
     "typecheck": "tsc --build && pnpm typecheck:tools",
-    "typecheck:tools": "tsc -p tsconfig.tools.json",
+    "typecheck:tools": "tsc -p tsconfig.tools.json && tsc -p tsconfig.legacy.json",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

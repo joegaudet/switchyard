@@ -50,6 +50,17 @@ export default tseslint.config(
     },
   },
   {
+    // Legacy-decorator fixtures typecheck under their own project (experimentalDecorators).
+    files: ['packages/*/tests/**/*.legacy.ts'],
+    languageOptions: {
+      parserOptions: {
+        projectService: false,
+        project: './tsconfig.legacy.json',
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
     // ember-cli loads addon-main.cjs with require(), so it is CommonJS.
     files: ['packages/*/addon-main.cjs'],
     languageOptions: {
