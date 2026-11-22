@@ -110,13 +110,13 @@ importers:
       '@rollup/plugin-babel':
         specifier: ^7.1.0
         version: 7.1.0(@babel/core@7.29.13(supports-color@7.2.0))(rollup@4.68.7)(supports-color@7.2.0)
-      '@switchyard/core':
+      '@switchyard-ts/core':
         specifier: workspace:*
         version: link:../packages/core
-      '@switchyard/ember':
+      '@switchyard-ts/ember':
         specifier: workspace:*
         version: link:../packages/ember
-      '@switchyard/graph':
+      '@switchyard-ts/graph':
         specifier: workspace:*
         version: link:../packages/graph
       babel-plugin-ember-template-compilation:
@@ -152,10 +152,13 @@ importers:
 
   packages/cli:
     dependencies:
-      '@switchyard/graph':
+      '@sindresorhus/is':
+        specifier: ^8.1.0
+        version: 8.1.0
+      '@switchyard-ts/graph':
         specifier: workspace:^
         version: link:../graph
-      '@switchyard/interop':
+      '@switchyard-ts/interop':
         specifier: workspace:^
         version: link:../interop
       esbuild:
@@ -168,11 +171,15 @@ importers:
       '@real-enums/core':
         specifier: ^2.2.0
         version: 2.2.1
-      '@switchyard/core':
+      '@switchyard-ts/core':
         specifier: workspace:^
         version: link:../core
 
   packages/core:
+    dependencies:
+      '@sindresorhus/is':
+        specifier: ^8.1.0
+        version: 8.1.0
     devDependencies:
       '@real-enums/core':
         specifier: ^2.2.0
@@ -223,10 +230,10 @@ importers:
       '@rollup/plugin-babel':
         specifier: ^7.1.0
         version: 7.1.0(@babel/core@7.29.13(supports-color@7.2.0))(rollup@4.68.7)(supports-color@7.2.0)
-      '@switchyard/core':
+      '@switchyard-ts/core':
         specifier: workspace:^
         version: link:../core
-      '@switchyard/graph':
+      '@switchyard-ts/graph':
         specifier: workspace:^
         version: link:../graph
       babel-plugin-ember-template-compilation:
@@ -246,6 +253,10 @@ importers:
         version: 6.0.3
 
   packages/eslint-plugin:
+    dependencies:
+      '@sindresorhus/is':
+        specifier: ^8.1.0
+        version: 8.1.0
     devDependencies:
       eslint:
         specifier: ^10.15.0
@@ -256,6 +267,9 @@ importers:
 
   packages/graph:
     dependencies:
+      '@sindresorhus/is':
+        specifier: ^8.1.0
+        version: 8.1.0
       elkjs:
         specifier: ^0.10.2
         version: 0.10.2
@@ -263,7 +277,7 @@ importers:
       '@real-enums/core':
         specifier: ^2.2.0
         version: 2.2.1
-      '@switchyard/core':
+      '@switchyard-ts/core':
         specifier: workspace:^
         version: link:../core
 
@@ -278,10 +292,10 @@ importers:
       '@real-enums/core':
         specifier: ^2.2.0
         version: 2.2.1
-      '@switchyard/core':
+      '@switchyard-ts/core':
         specifier: workspace:^
         version: link:../core
-      '@switchyard/test':
+      '@switchyard-ts/test':
         specifier: workspace:^
         version: link:../test
       '@testing-library/dom':
@@ -299,15 +313,18 @@ importers:
       '@statelyai/inspect':
         specifier: ^0.7.2
         version: 0.7.2(xstate@5.33.4)
-      '@switchyard/core':
+      '@switchyard-ts/core':
         specifier: workspace:^
         version: link:../core
-      '@switchyard/interop':
+      '@switchyard-ts/interop':
         specifier: workspace:^
         version: link:../interop
 
   packages/interop:
     dependencies:
+      '@sindresorhus/is':
+        specifier: ^8.1.0
+        version: 8.1.0
       fast-xml-parser:
         specifier: ^5.12.1
         version: 5.12.1
@@ -315,7 +332,7 @@ importers:
       '@real-enums/core':
         specifier: ^2.2.0
         version: 2.2.1
-      '@switchyard/core':
+      '@switchyard-ts/core':
         specifier: workspace:^
         version: link:../core
       xstate:
@@ -329,14 +346,18 @@ importers:
         version: 2.2.1
 
   packages/test:
+    dependencies:
+      '@sindresorhus/is':
+        specifier: ^8.1.0
+        version: 8.1.0
     devDependencies:
       '@real-enums/core':
         specifier: ^2.2.0
         version: 2.2.1
-      '@switchyard/core':
+      '@switchyard-ts/core':
         specifier: workspace:^
         version: link:../core
-      '@switchyard/graph':
+      '@switchyard-ts/graph':
         specifier: workspace:^
         version: link:../graph
 
@@ -405,13 +426,13 @@ importers:
       '@rollup/plugin-babel':
         specifier: ^7.1.0
         version: 7.1.0(@babel/core@7.29.13(supports-color@7.2.0))(rollup@4.68.7)(supports-color@7.2.0)
-      '@switchyard/core':
+      '@switchyard-ts/core':
         specifier: workspace:*
         version: link:../packages/core
-      '@switchyard/ember':
+      '@switchyard-ts/ember':
         specifier: workspace:*
         version: link:../packages/ember
-      '@switchyard/graph':
+      '@switchyard-ts/graph':
         specifier: workspace:*
         version: link:../packages/graph
       '@types/qunit':
@@ -2250,6 +2271,10 @@ packages:
 
   '@simple-dom/interface@1.4.0':
     resolution: {integrity: sha512-l5qumKFWU0S+4ZzMaLXFU8tQZsicHEMEyAxI5kDFGhJsRqDwe0a7/iPA/GdxlGyDKseQQAgIz5kzU7eXTrlSpA==}
+
+  '@sindresorhus/is@8.1.0':
+    resolution: {integrity: sha512-2SX/1jW6CIMAiebvVv5ZInoCEuWQmMyBoJXXGC6Vjakjp/fpxP5eHs7/V6WKuPEIbuK06+VpjH+vjLQhr98rDQ==}
+    engines: {node: '>=22'}
 
   '@sindresorhus/merge-streams@4.0.0':
     resolution: {integrity: sha512-tlqY9xq5ukxTUZBmoOp+m61cqwQD5pHJtFY3Mn8CA8ps6yghLH/Hw8UPdqg4OLmFW3IFlcXnQNmo/dh8HzXYIQ==}
@@ -8041,6 +8066,8 @@ snapshots:
   '@sec-ant/readable-stream@0.4.1': {}
 
   '@simple-dom/interface@1.4.0': {}
+
+  '@sindresorhus/is@8.1.0': {}
 
   '@sindresorhus/merge-streams@4.0.0': {}
 

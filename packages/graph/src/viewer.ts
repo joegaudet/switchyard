@@ -1,6 +1,6 @@
 // The live diagram: renders a machine's SVG, marks the active states, and flashes each
 // transition as it is taken. Browser-only, hence its own entrypoint.
-import type { Machine } from '@switchyard/core'
+import type { Machine } from '@switchyard-ts/core'
 import { toGraph, type MachineClass } from './graph.js'
 import { toSvg } from './svg.js'
 

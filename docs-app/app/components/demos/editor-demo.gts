@@ -1,7 +1,7 @@
 import Component from '@glimmer/component'
 import { on } from '@ember/modifier'
 import { htmlSafe } from '@ember/template'
-import { machine, send } from '@switchyard/ember'
+import { machine, send } from '@switchyard-ts/ember'
 import { Example } from 'docs-app/components/example'
 import { Formatting, Toggle } from 'docs-app/machines/editor'
 import source from 'docs-app/machines/editor.ts?raw'

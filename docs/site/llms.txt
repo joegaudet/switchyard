@@ -21,13 +21,13 @@ decorated methods may not be named after Machine's own members (`stop`, `send`, 
 
 ## Packages
 
-- @switchyard/core: Machine, State, decorators, createInterpreter, configure, bindField
-- @switchyard/ember: machine(owner, m), send/matches/can helpers, test waiters, SwitchyardAnnouncer; /resource (machineResource); /debug (SwitchyardDebug)
-- @switchyard/graph: toGraph, toMermaid, toDot, toSvg, describeInterface, topology; /viewer (<switchyard-diagram>)
-- @switchyard/test: shortestPaths, simplePaths, coverage, matchers (toBeIn), setupMachineAssertions, useManualClock
-- @switchyard/harnessed: modelTests
-- @switchyard/interop: toXState, fromXState, toClassSource, toScxml, fromScxml
-- @switchyard/inspector: connectInspector (Stately Inspector)
-- @switchyard/cli: `switchyard diagram|export|import`; /vite
-- @switchyard/eslint-plugin: no-unreachable-state, no-unknown-guard, exhaustive-state-switch
-- @switchyard/skills: `npx switchyard-skills` installs the authoring skill
+- @switchyard-ts/core: Machine, State, decorators, createInterpreter, configure, bindField
+- @switchyard-ts/ember: machine(owner, m), send/matches/can helpers, test waiters, SwitchyardAnnouncer; /resource (machineResource); /debug (SwitchyardDebug)
+- @switchyard-ts/graph: toGraph, toMermaid, toDot, toSvg, describeInterface, topology; /viewer (<switchyard-diagram>)
+- @switchyard-ts/test: shortestPaths, simplePaths, coverage, matchers (toBeIn), setupMachineAssertions, useManualClock
+- @switchyard-ts/harnessed: modelTests
+- @switchyard-ts/interop: toXState, fromXState, toClassSource, toScxml, fromScxml
+- @switchyard-ts/inspector: connectInspector (Stately Inspector)
+- @switchyard-ts/cli: `switchyard diagram|export|import`; /vite
+- @switchyard-ts/eslint-plugin: no-unreachable-state, no-unknown-guard, exhaustive-state-switch
+- @switchyard-ts/skills: `npx switchyard-skills` installs the authoring skill

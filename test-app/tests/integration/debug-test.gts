@@ -1,7 +1,7 @@
 import { module, test } from 'qunit'
 import { setupRenderingTest } from 'ember-qunit'
 import { render, waitUntil } from '@ember/test-helpers'
-import { SwitchyardDebug } from '@switchyard/ember/debug'
+import { SwitchyardDebug } from '@switchyard-ts/ember/debug'
 import { OrderFlow } from 'test-app/machines'
 
 module('<SwitchyardDebug>', function (hooks) {

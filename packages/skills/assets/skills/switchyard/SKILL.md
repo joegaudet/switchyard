@@ -68,35 +68,41 @@ class Fetch extends Machine<FetchState> {
 - `@onEntry(S)`, `@onExit(S)`, `@always({ from, to, guard })` (eventless), `@region(E) accessor x!: E`
   for parallel regions (the root becomes parallel; `m.state` is `{ x: E.Value, … }`). A state
   enum shared by two regions needs `{ in: 'regionName' }` on decorators that use it.
+- Regions inside one state: `S.of('editing', { regions: { bold: Toggle } })`, addressed with
+  `{ in: 'editing.bold' }`.
+- A method may not be named after Machine's own members (`stop`, `send`, `state`, …); name the
+  event apart: `@transition({ event: 'stop', … }) onStop() {}`. Also for dotted event names.
+- `@after('getterName', …)` reads the delay from a getter on entry.
 - An unhandled event is a no-op with a development warning; `static strict = true` throws.
 
 ## Reading a machine
 
 `m.state` (the root value), `m.matches(State.X)` (any depth), `m.can.retry`, `m.status`,
 `m.snapshot()` / `m.restore(snapshot)`, `m.subscribe(fn)`, `m.actors`, `m.spawn(child, { id })`,
-`m.sendTo(id, event)`, `this.sendParent(event)`, `this.emit(type, payload)` / `m.on(type, fn)`.
+`m.sendTo(id, event)`, `this.sendParent(event)`, `this.emit(type, payload)` / `m.on(type, fn)`,
+`await waitFor(m, pred, { timeout })`, `await toPromise(m)`.
 
 ## Ember
 
-Import `@switchyard/ember` once (it wires tracking and test waiters). Then
+Import `@switchyard-ts/ember` once (it wires tracking and test waiters). Then
 `fetch = machine(this, new Fetch())` in a component or service (stopped on destroy), and in
 templates `{{on "click" (send this.fetch "retry")}}`, `(matches this.fetch FetchState.Done)`,
 `(can this.fetch "retry")`. `<SwitchyardDebug @machine={{this.fetch}} />` from
-`@switchyard/ember/debug` shows the live chart.
+`@switchyard-ts/ember/debug` shows the live chart.
 
 ## Testing
 
-- `@after` in tests: `const clock = useManualClock(Fetch)` (from `@switchyard/test`), then
+- `@after` in tests: `const clock = useManualClock(Fetch)` (from `@switchyard-ts/test`), then
   `clock.advance(ms)`. In Ember tests `await settled()` waits for invokes and timers.
 - Assert with `expect(m).toBeIn(State.X)` after `expect.extend(matchers)`, or QUnit's
   `assert.machineIn(m, State.X)` after `setupMachineAssertions(assert)`.
 - `coverage(Fetch)` + `track(m)` reports states and transitions no test reached.
-- Model-based tests (`@switchyard/harnessed`): `modelTests({ machine, events, states })` gives
+- Model-based tests (`@switchyard-ts/harnessed`): `modelTests({ machine, events, states })` gives
   one test per path; drive events and check states through a harness.
 
 ## Before finishing
 
 - `npx switchyard diagram src/fetch.ts` (add `--legacy` for Ember sources) and read the chart:
   unreachable states and missing transitions show up at a glance.
-- Lint with `@switchyard/eslint-plugin` (`configs.recommended`): unreachable states, unknown
+- Lint with `@switchyard-ts/eslint-plugin` (`configs.recommended`): unreachable states, unknown
   guards, non-exhaustive `switch (m.state)`.

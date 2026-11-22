@@ -1,5 +1,5 @@
 import { on } from '@ember/modifier'
-import { send } from '@switchyard/ember'
+import { send } from '@switchyard-ts/ember'
 import type OrderController from 'test-app/controllers/order'
 
 <template>

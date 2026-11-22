@@ -1,4 +1,4 @@
-import { Machine, State, transition } from '@switchyard/core'
+import { Machine, State, transition } from '@switchyard-ts/core'
 
 export class FetchState extends State {
   static Idle = FetchState.of('idle')

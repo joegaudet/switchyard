@@ -1,6 +1,7 @@
 // The diagram model, read from a machine config. Labels come from the names the compiler gives
 // guards and actions (see core's `named`), so hand-written configs label the same way.
-import type { Machine, MachineConfig, StateConfig, TransitionConfig } from '@switchyard/core'
+import { isFunction } from '@sindresorhus/is'
+import type { Machine, MachineConfig, StateConfig, TransitionConfig } from '@switchyard-ts/core'
 
 export type StateType = 'atomic' | 'compound' | 'parallel' | 'final' | 'history'
 
@@ -44,7 +45,7 @@ export type MachineClass = (abstract new (...args: never[]) => Machine<unknown>)
 
 /** The graph of a Machine class, or of a plain interpreter config. */
 export function toGraph(input: MachineClass | MachineConfig, name?: string): Graph {
-  const isClass = typeof input === 'function'
+  const isClass = isFunction(input)
   const config = isClass ? input.toConfig() : input
   const transitions: GraphTransition[] = []
 
@@ -84,7 +85,7 @@ export function toGraph(input: MachineClass | MachineConfig, name?: string): Gra
       for (const t of [ts].flat()) add(event, t)
     for (const t of cfg.always ?? []) add('always', t)
     for (const [ms, ts] of Object.entries(cfg.after ?? {}))
-      for (const t of [ts].flat()) add(`after ${ms}ms`, t)
+      for (const t of [ts].flat()) add(/^\d+$/.test(ms) ? `after ${ms}ms` : `after ${ms}`, t)
     ;(cfg.invoke ?? []).forEach((inv, i) => {
       if (inv.onDone) add(`done: ${state.invoke[i]}`, inv.onDone)
       if (inv.onError) add(`error: ${state.invoke[i]}`, inv.onError)

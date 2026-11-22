@@ -1,10 +1,10 @@
 <template>
   <h1>In Ember</h1>
-  <p>Import <code>@switchyard/ember</code> once, in your app. That one import makes machines tracked and their timers and invokes test waiters.</p>
+  <p>Import <code>@switchyard-ts/ember</code> once, in your app. That one import makes machines tracked and their timers and invokes test waiters.</p>
   <pre><code class="language-typescript">// app/app.ts
-import '@switchyard/ember'</code></pre>
+import '@switchyard-ts/ember'</code></pre>
   <h2>In a component</h2>
-  <pre><code class="language-handlebars">import &lbrace; machine, send, can, matches &rbrace; from '@switchyard/ember'
+  <pre><code class="language-handlebars">import &lbrace; machine, send, can, matches &rbrace; from '@switchyard-ts/ember'
 
 export default class UserCard extends Component &lbrace;
   fetch = machine(this, new Fetch()) // started now, stopped when the component is destroyed
@@ -25,7 +25,7 @@ export default class UserCard extends Component &lbrace;
   session = machine(this, new Auth())
 &rbrace;</code></pre>
   <h2>In a template, with ember-resources</h2>
-  <pre><code class="language-handlebars">import &lbrace; machineResource &rbrace; from '@switchyard/ember/resource'
+  <pre><code class="language-handlebars">import &lbrace; machineResource &rbrace; from '@switchyard-ts/ember/resource'
 
 &lt;template&gt;
   \{{#let (machineResource Fetch) as |fetch|}}…\{{/let}}

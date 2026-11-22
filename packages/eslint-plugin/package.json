@@ -1,5 +1,5 @@
 {
-  "name": "@switchyard/eslint-plugin",
+  "name": "@switchyard-ts/eslint-plugin",
   "version": "0.0.0",
   "description": "ESLint rules for Switchyard machines: unreachable states, unknown guards, non-exhaustive state switches.",
   "keywords": [
@@ -49,5 +49,8 @@
   "devDependencies": {
     "eslint": "^10.15.0",
     "typescript-eslint": "^8.73.0"
+  },
+  "dependencies": {
+    "@sindresorhus/is": "^8.1.0"
   }
 }

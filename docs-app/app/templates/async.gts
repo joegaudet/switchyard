@@ -22,9 +22,16 @@ async load(signal: AbortSignal) &lbrace;
     Machines use <code>setTimeout</code>; in tests give a class a manual clock and move time
     yourself:
   </p>
-  <pre><code class="language-typescript">const clock = useManualClock(Fetch) // @switchyard/test
+  <pre><code class="language-typescript">const clock = useManualClock(Fetch) // @switchyard-ts/test
 fetch.fetch()
 clock.advance(3000) // the @after(3000) transition fires now</code></pre>
+  <p>
+    A delay can come from the machine itself: <code>@after('greenFor', …)</code> reads the
+    <code>greenFor</code> getter each time the state is entered.
+  </p>
+  <h2>Waiting from outside</h2>
+  <pre><code class="language-typescript">await waitFor(fetch, f =&gt; f.matches(FetchState.Done), &lbrace; timeout: 5000 &rbrace;)
+const output = await toPromise(job) // resolves with the output getter when the machine finishes</code></pre>
   <p>In Ember tests, <code>await settled()</code> also waits for pending invokes and timers.</p>
   <FetchDemo />
 </template>

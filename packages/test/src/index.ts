@@ -1,7 +1,8 @@
 // Testing Switchyard machines: model paths for model-based tests, transition coverage,
 // matchers for vitest/jest and QUnit, and a manual clock.
-import { manualClock, type Machine, type Clock, type State } from '@switchyard/core'
-import { states, toGraph, type MachineClass } from '@switchyard/graph'
+import { isString } from '@sindresorhus/is'
+import { manualClock, type Machine, type Clock, type State } from '@switchyard-ts/core'
+import { states, toGraph, type MachineClass } from '@switchyard-ts/graph'
 
 export { manualClock }
 
@@ -43,7 +44,7 @@ function setup<M extends Machine<unknown>>(create: () => M, options: PathOptions
           .filter(e => !internalEvent.test(e)),
       ),
     ]
-  ).map(e => (typeof e === 'string' ? { type: e } : e))
+  ).map(e => (isString(e) ? { type: e } : e))
   const key = options.key ?? (m => m.snapshot().configuration.join(' '))
   // Replaying from a fresh machine keeps guards that read context honest.
   const replay = (steps: PathStep[]) => {
@@ -122,8 +123,8 @@ export interface CoverageReport {
 
 // The graph names events as diagrams do; a microstep names them as the runtime does.
 function graphEvent(type: string): string {
-  const after = /^xstate\.after\.(\d+)\./.exec(type)
-  if (after) return `after ${after[1]}ms`
+  const after = /^xstate\.after\.([^.]+)\./.exec(type)
+  if (after) return /^\d+$/.test(after[1]!) ? `after ${after[1]}ms` : `after ${after[1]}`
   const done = /^xstate\.done\.actor\.(.+)$/.exec(type)
   if (done) return `done: ${done[1]}`
   const error = /^xstate\.error\.actor\.(.+)$/.exec(type)

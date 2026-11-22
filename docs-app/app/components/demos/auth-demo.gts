@@ -1,7 +1,7 @@
 import Component from '@glimmer/component'
 import { on } from '@ember/modifier'
 import { service } from '@ember/service'
-import { matches, send, SwitchyardAnnouncer } from '@switchyard/ember'
+import { matches, send, SwitchyardAnnouncer } from '@switchyard-ts/ember'
 import { Example } from 'docs-app/components/example'
 import { Session } from 'docs-app/machines/auth'
 import source from 'docs-app/machines/auth.ts?raw'

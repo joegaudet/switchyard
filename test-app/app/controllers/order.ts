@@ -1,5 +1,5 @@
 import Controller from '@ember/controller'
-import { bindField } from '@switchyard/core'
+import { bindField } from '@switchyard-ts/core'
 import { OrderFlow } from 'test-app/machines'
 
 export default class OrderController extends Controller {

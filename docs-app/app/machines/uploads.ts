@@ -1,5 +1,5 @@
 import { tracked } from '@glimmer/tracking'
-import { after, always, Machine, State, transition } from '@switchyard/core'
+import { after, always, Machine, State, transition } from '@switchyard-ts/core'
 
 export class Upload extends State {
   static Sending = Upload.of('sending')

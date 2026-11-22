@@ -1,6 +1,6 @@
 // Needs ember-resources (an optional peer). Kept out of the main entrypoint for that reason.
 import { resource, resourceFactory } from 'ember-resources'
-import type { Machine } from '@switchyard/core'
+import type { Machine } from '@switchyard-ts/core'
 
 /**
  * A machine as a resource: started when first read, stopped when the resource is torn down

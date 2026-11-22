@@ -1,6 +1,6 @@
 <template>
   <h1>xstate and SCXML</h1>
-  <p>Switchyard runs the same semantics as xstate v5, and <code>@switchyard/interop</code> moves machines between them.</p>
+  <p>Switchyard runs the same semantics as xstate v5, and <code>@switchyard-ts/interop</code> moves machines between them.</p>
   <ul>
     <li><code>toXState(Fetch)</code>: xstate JSON, for Stately Studio and its visualiser. Checked against xstate itself: the same events give the same states.</li>
     <li><code>fromXState(json, implementations)</code>: run an xstate config on Switchyard.</li>
@@ -9,7 +9,7 @@
   </ul>
   <h2>The Stately Inspector</h2>
   <pre><code class="language-typescript">import &lbrace; createBrowserInspector &rbrace; from '@statelyai/inspect'
-import &lbrace; connectInspector &rbrace; from '@switchyard/inspector'
+import &lbrace; connectInspector &rbrace; from '@switchyard-ts/inspector'
 
 connectInspector(this.fetch, createBrowserInspector())</code></pre>
   <p>The machine, and every machine it spawns or invokes, shows up in the inspector, live.</p>

@@ -1,5 +1,6 @@
 // ESLint rules for Switchyard. They read one file's syntax: State enums (`class X extends
 // State` with `static Y = X.of('y')`) and machines (`class M extends Machine`) declared in it.
+import { isObject, isString } from '@sindresorhus/is'
 import type { Rule } from 'eslint'
 
 interface N {
@@ -8,8 +9,7 @@ interface N {
 }
 
 const node = (v: unknown) => v as N
-const isNode = (v: unknown): v is N =>
-  typeof v === 'object' && v !== null && typeof (v as N).type === 'string'
+const isNode = (v: unknown): v is N => isObject(v) && isString((v as N).type)
 
 function walk(root: N, visit: (n: N, ancestors: N[]) => void, ancestors: N[] = []) {
   visit(root, ancestors)
@@ -122,7 +122,7 @@ const noUnknownGuard: Rule.RuleModule = {
           (node(c['body'])['body'] as N[]).map(m => name(m['key'])).filter(Boolean),
         )
         const check = (value: N) => {
-          if (value.type === 'Literal' && typeof value['value'] === 'string') {
+          if (value.type === 'Literal' && isString(value['value'])) {
             if (!members.has(value['value']))
               context.report({
                 node: value as never,
@@ -186,7 +186,7 @@ const rules = {
 }
 
 const plugin = {
-  meta: { name: '@switchyard/eslint-plugin' },
+  meta: { name: '@switchyard-ts/eslint-plugin' },
   rules,
   configs: {} as Record<string, unknown>,
 }

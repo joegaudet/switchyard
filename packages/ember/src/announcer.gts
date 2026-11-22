@@ -3,7 +3,7 @@
 // screen readers hear state changes the screen shows some other way.
 import type { TOC } from '@ember/component/template-only'
 import { htmlSafe } from '@ember/template'
-import type { Machine } from '@switchyard/core'
+import type { Machine } from '@switchyard-ts/core'
 
 /** The message for the deepest active state path (`loading.retrying`, then `loading`) that has one. */
 export function announcement(machine: Machine<unknown>, messages: Record<string, string>): string {

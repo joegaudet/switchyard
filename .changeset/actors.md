@@ -1,5 +1,5 @@
 ---
-'@switchyard/core': minor
+'@switchyard-ts/core': minor
 ---
 
 Actors and time: `@after` on an injectable clock (`manualClock()` for tests), `@invoke`

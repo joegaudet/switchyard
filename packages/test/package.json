@@ -1,5 +1,5 @@
 {
-  "name": "@switchyard/test",
+  "name": "@switchyard-ts/test",
   "version": "0.0.0",
   "description": "Testing Switchyard machines: model paths, transition coverage, matchers, a manual clock.",
   "keywords": [
@@ -44,12 +44,15 @@
     "node": ">=22.12.0"
   },
   "peerDependencies": {
-    "@switchyard/core": "workspace:^",
-    "@switchyard/graph": "workspace:^"
+    "@switchyard-ts/core": "workspace:^",
+    "@switchyard-ts/graph": "workspace:^"
   },
   "devDependencies": {
-    "@switchyard/core": "workspace:^",
-    "@switchyard/graph": "workspace:^",
-    "@real-enums/core": "^2.2.0"
+    "@real-enums/core": "^2.2.0",
+    "@switchyard-ts/core": "workspace:^",
+    "@switchyard-ts/graph": "workspace:^"
+  },
+  "dependencies": {
+    "@sindresorhus/is": "^8.1.0"
   }
 }

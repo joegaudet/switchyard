@@ -1,5 +1,5 @@
 {
-  "name": "@switchyard/harnessed",
+  "name": "@switchyard-ts/harnessed",
   "version": "0.0.0",
   "description": "Model-based tests for Switchyard machines, driven through harnessed component harnesses.",
   "keywords": [
@@ -43,15 +43,15 @@
     "node": ">=22.12.0"
   },
   "peerDependencies": {
-    "@switchyard/core": "workspace:^",
-    "@switchyard/test": "workspace:^"
+    "@switchyard-ts/core": "workspace:^",
+    "@switchyard-ts/test": "workspace:^"
   },
   "devDependencies": {
     "@harnessed-ts/core": "^0.8.3",
     "@harnessed-ts/dom": "^0.8.3",
     "@real-enums/core": "^2.2.0",
-    "@switchyard/core": "workspace:^",
-    "@switchyard/test": "workspace:^",
+    "@switchyard-ts/core": "workspace:^",
+    "@switchyard-ts/test": "workspace:^",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/user-event": "^14.6.13"
   }

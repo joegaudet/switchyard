@@ -1,5 +1,5 @@
 ---
-'@switchyard/core': minor
+'@switchyard-ts/core': minor
 ---
 
 Persistence: `snapshot()`/`restore()` on interpreters and machines (no actions run; timers and

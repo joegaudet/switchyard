@@ -1,4 +1,4 @@
-// configure(): the seams a framework adapter (@switchyard/ember) plugs into.
+// configure(): the seams a framework adapter (@switchyard-ts/ember) plugs into.
 import { afterEach, describe, expect, it } from 'vitest'
 import { configure, manualClock, type Configuration } from '../../src/index.js'
 import { Fetch, FetchState, Job, Worker } from './machines.standard.js'
@@ -150,5 +150,22 @@ describe('event names', () => {
     b.send('media.ended')
     expect(b.state).toBe(P.Stopped)
     expect(Object.keys(Player.toConfig().states!['playing']!.on!)).toEqual(['stop', 'media.ended'])
+  })
+
+  it('`can` answers for the method, as well as for the event it sends', async () => {
+    const { Machine, State, transition } = await import('../../src/index.js')
+    class P extends State {
+      static Playing = P.of('playing')
+      static Stopped = P.of('stopped')
+    }
+    class Player extends Machine<P> {
+      @transition({ event: 'media.ended', from: P.Playing, to: P.Stopped })
+      ended() {}
+    }
+    const m = new Player()
+    expect(m.can['ended']).toBe(true)
+    expect(m.can['media.ended']).toBe(true)
+    m.ended()
+    expect(m.can['ended']).toBe(false)
   })
 })

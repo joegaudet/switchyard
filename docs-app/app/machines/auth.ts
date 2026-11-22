@@ -1,5 +1,5 @@
 import { tracked } from '@glimmer/tracking'
-import { after, invoke, Machine, State, transition } from '@switchyard/core'
+import { after, invoke, Machine, State, transition } from '@switchyard-ts/core'
 
 export class Session extends State {
   static LoggedOut = Session.of('loggedOut')

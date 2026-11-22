@@ -1,5 +1,5 @@
 {
-  "name": "@switchyard/core",
+  "name": "@switchyard-ts/core",
   "version": "0.0.0",
   "description": "Statecharts as decorated classes, with real-enums for states.",
   "keywords": [
@@ -50,5 +50,8 @@
   },
   "devDependencies": {
     "@real-enums/core": "^2.2.0"
+  },
+  "dependencies": {
+    "@sindresorhus/is": "^8.1.0"
   }
 }

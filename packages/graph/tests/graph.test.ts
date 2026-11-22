@@ -231,3 +231,10 @@ describe('transitions handled in every state', () => {
     expect(svg).toContain('class="sy-any"')
   })
 })
+
+describe('named delays', () => {
+  it('label as the delay name, not as milliseconds', () => {
+    const g = toGraph({ states: { a: { after: { greenFor: { target: 'b' } } }, b: {} } })
+    expect(g.transitions[0]!.label).toBe('after greenFor')
+  })
+})

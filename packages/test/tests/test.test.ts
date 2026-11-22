@@ -1,4 +1,4 @@
-import { after, history, Machine, State, transition } from '@switchyard/core'
+import { after, history, Machine, State, transition } from '@switchyard-ts/core'
 import { describe, expect, it, vi } from 'vitest'
 import {
   coverage,

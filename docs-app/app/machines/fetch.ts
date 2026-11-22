@@ -1,6 +1,6 @@
 import { tracked } from '@glimmer/tracking'
 import { is } from '@real-enums/core'
-import { after, history, invoke, Machine, State, transition } from '@switchyard/core'
+import { after, history, invoke, Machine, State, transition } from '@switchyard-ts/core'
 
 export class Attempt extends State {
   static First = Attempt.of('first')

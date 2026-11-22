@@ -1,6 +1,6 @@
 import Component from '@glimmer/component'
 import { on } from '@ember/modifier'
-import { can, machine, send } from '@switchyard/ember'
+import { can, machine, send } from '@switchyard-ts/ember'
 import { Example } from 'docs-app/components/example'
 import { api, Fetch } from 'docs-app/machines/fetch'
 import source from 'docs-app/machines/fetch.ts?raw'

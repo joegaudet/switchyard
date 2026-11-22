@@ -1,7 +1,7 @@
 ---
-'@switchyard/core': minor
-'@switchyard/graph': patch
-'@switchyard/interop': minor
+'@switchyard-ts/core': minor
+'@switchyard-ts/graph': patch
+'@switchyard-ts/interop': minor
 ---
 
 `@transition({ event })` names an event apart from its method (`event: 'stop'`, `'media.ended'`);

@@ -9,7 +9,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc --build --force && pnpm -r --filter './packages/*' run build",
-    "typecheck": "tsc --build && pnpm typecheck:tools && pnpm -r --filter @switchyard/ember --filter test-app --filter docs-app run typecheck",
+    "typecheck": "tsc --build && pnpm typecheck:tools && pnpm -r --filter @switchyard-ts/ember --filter test-app --filter docs-app run typecheck",
     "typecheck:tools": "tsc -p tsconfig.tools.json && tsc -p tsconfig.legacy.json",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

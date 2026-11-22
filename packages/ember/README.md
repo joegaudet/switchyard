@@ -1,4 +1,4 @@
-# @switchyard/ember
+# @switchyard-ts/ember
 
 Switchyard statecharts in Ember. Importing the package wires in four things:
 
@@ -13,7 +13,7 @@ Switchyard statecharts in Ember. Importing the package wires in four things:
 ```gts
 import Component from '@glimmer/component'
 import { on } from '@ember/modifier'
-import { machine, send, can } from '@switchyard/ember'
+import { machine, send, can } from '@switchyard-ts/ember'
 import { Fetch } from './fetch'
 
 export default class UserCard extends Component {
@@ -41,7 +41,7 @@ With [ember-resources](https://github.com/NullVoxPopuli/ember-resources) install
 can live in a template block:
 
 ```gts
-import { machineResource } from '@switchyard/ember/resource'
+import { machineResource } from '@switchyard-ts/ember/resource'
 
 <template>
   {{#let (machineResource Fetch) as |fetch|}}…{{/let}}

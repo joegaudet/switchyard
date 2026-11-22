@@ -1,5 +1,6 @@
 // xstate v5 machine JSON in both directions, and xstate config → decorated-class source.
-import { Machine } from '@switchyard/core'
+import { isFunction, isString } from '@sindresorhus/is'
+import { Machine } from '@switchyard-ts/core'
 import type {
   Action,
   Guard,
@@ -7,7 +8,7 @@ import type {
   MachineConfig,
   StateConfig,
   TransitionConfig,
-} from '@switchyard/core'
+} from '@switchyard-ts/core'
 
 /** The JSON subset of an xstate v5 machine config: names stand in for guards, actions and actors. */
 export interface XStateNode {
@@ -49,7 +50,7 @@ const list = <T>(v: T | T[] | undefined): T[] => (v === undefined ? [] : Array.i
  * are absolute (`#Fetch.loading.first`); guards, actions and actors are their names.
  */
 export function toXState(input: MachineClass | MachineConfig, machineId?: string): XStateNode {
-  const isClass = typeof input === 'function'
+  const isClass = isFunction(input)
   const id = machineId ?? (isClass ? input.name : 'machine')
   const ref = (path: string) => `#${id}.${path}`
 
@@ -156,19 +157,19 @@ export function fromXState(json: XStateNode, implementations: Implementations = 
   const { resolve } = index(json)
   const named = <F extends (...args: never[]) => unknown>(fn: F, name: string): F =>
     Object.defineProperty(fn, 'name', { value: name })
-  const actionName = (a: XStateAction) => (typeof a === 'string' ? a : a.type)
+  const actionName = (a: XStateAction) => (isString(a) ? a : a.type)
   const action = (a: XStateAction): Action => {
     const n = actionName(a)
     return implementations.actions?.[n] ?? named(() => {}, n)
   }
   const guard = (g: string | { type: string }): Guard => {
-    const n = typeof g === 'string' ? g : g.type
+    const n = isString(g) ? g : g.type
     const fn = implementations.guards?.[n]
     if (!fn) throw new Error(`xstate guard "${n}" has no implementation`)
     return named((e => fn(e)) as Guard, n)
   }
   const transition = (source: string, t: string | XStateTransition): TransitionConfig => {
-    const obj: XStateTransition = typeof t === 'string' ? { target: t } : t
+    const obj: XStateTransition = isString(t) ? { target: t } : t
     const targets = list(obj.target).map(x => resolve(source, x))
     return {
       ...(targets.length ? { target: targets.length === 1 ? targets[0]! : targets } : {}),
@@ -220,10 +221,18 @@ export function fromXState(json: XStateNode, implementations: Implementations = 
 }
 
 const pascal = (s: string) => {
-  const p = s.replace(/(^|[^a-zA-Z0-9]+)([a-zA-Z0-9])/g, (_m, _sep, c: string) => c.toUpperCase())
+  const p = s
+    .replace(/(^|[^a-zA-Z0-9]+)([a-zA-Z0-9])/g, (_m, _sep, c: string) => c.toUpperCase())
+    .replace(/[^a-zA-Z0-9]/g, '')
   return /^[0-9]/.test(p) ? `_${p}` : p || '_'
 }
 const isIdentifier = (s: string) => /^[A-Za-z_$][\w$]*$/.test(s)
+// Names in the config are data: they go into the source only as escaped literals, identifiers
+// or single-line comments, so an imported file can't add code to the class.
+const str = (s: string) =>
+  `'${JSON.stringify(s).slice(1, -1).replace(/\\"/g, '"').replace(/'/g, "\\'")}'`
+const ident = (s: string) => (isIdentifier(s) ? s : pascal(s))
+const oneLine = (s: string) => s.replace(/[\r\n\u2028\u2029]/g, ' ')
 // Machine's own members; an event with one of these names gets a method of another name.
 const reserved = new Set(Object.getOwnPropertyNames(Machine.prototype))
 
@@ -262,13 +271,13 @@ export function toClassSource(json: XStateNode, name = pascal(json.id ?? 'Machin
         opts.push(`children: ${child}`)
         const h = Object.entries(c.states).find(([, s]) => s.type === 'history')
         if (h) {
-          opts.push(`history: '${h[1].history ?? 'shallow'}'`)
+          opts.push(`history: ${str(h[1].history ?? 'shallow')}`)
           historyOf.set(`${childPath}.${h[0]}`, childPath)
         }
       }
       if (c.type === 'final') opts.push('final: true')
       members.push(
-        `  static ${pascal(k)} = ${className}.of('${k}'${opts.length ? `, { ${opts.join(', ')} }` : ''})`,
+        `  static ${pascal(k)} = ${className}.of(${str(k)}${opts.length ? `, { ${opts.join(', ')} }` : ''})`,
       )
     }
     enums.push(`export class ${className} extends State {\n${members.join('\n')}\n}`)
@@ -276,6 +285,7 @@ export function toClassSource(json: XStateNode, name = pascal(json.id ?? 'Machin
 
   if (json.type === 'parallel') {
     for (const [k, r] of Object.entries(json.states ?? {})) {
+      if (!isIdentifier(k)) throw new Error(`Region "${oneLine(k)}" is not an identifier`)
       const cls = `${name}${pascal(k)}`
       declareEnum(r, k, cls)
       regions.push([k, cls])
@@ -304,16 +314,16 @@ export function toClassSource(json: XStateNode, name = pascal(json.id ?? 'Machin
     }
     const parts: string[] = []
     const region = regionOf(targets[0] ?? source ?? '')
-    if (region) parts.push(`in: '${region}'`)
+    if (region) parts.push(`in: ${str(region)}`)
     if (source !== undefined) parts.push(`from: ${ref(source)}`)
     if (targets[0] !== undefined) {
       if (historyOf.has(targets[0])) imports.add('history')
       parts.push(`to: ${ref(targets[0])}`)
     }
     if (t.guard) {
-      const g = typeof t.guard === 'string' ? t.guard : t.guard.type
+      const g = isString(t.guard) ? t.guard : t.guard.type
       guards.add(g)
-      parts.push(`guard: '${g}'`)
+      parts.push(`guard: ${str(g)}`)
     }
     if (t.reenter) parts.push('reenter: true')
     return `{ ${parts.join(', ')} }`
@@ -323,22 +333,22 @@ export function toClassSource(json: XStateNode, name = pascal(json.id ?? 'Machin
     const source = path || undefined
     for (const [event, ts] of Object.entries(n.on ?? {})) {
       for (const t of list<string | XStateTransition>(ts)) {
-        const obj = typeof t === 'string' ? { target: t } : t
+        const obj = isString(t) ? { target: t } : t
         const opts = options(source, obj, `"${event}" on "${path || '(root)'}"`)
         if (!opts) continue
         imports.add('transition')
         // `stop` or `media.ended` cannot be the method's name; the method says which event it sends.
         const method = isIdentifier(event) && !reserved.has(event) ? event : `on${pascal(event)}`
-        const decorator = method === event ? opts : opts.replace('{ ', `{ event: '${event}', `)
+        const decorator = method === event ? opts : opts.replace('{ ', `{ event: ${str(event)}, `)
         events.set(method, [...(events.get(method) ?? []), `  @transition(${decorator})`])
         for (const a of list(obj.actions))
           (bodies.get(method) ?? bodies.set(method, new Set()).get(method)!).add(
-            typeof a === 'string' ? a : a.type,
+            isString(a) ? a : a.type,
           )
       }
     }
     list<string | XStateTransition>(n.always).forEach((t, i) => {
-      const obj = typeof t === 'string' ? { target: t } : t
+      const obj = isString(t) ? { target: t } : t
       const opts = options(source, obj, `always on "${path || '(root)'}"`)
       if (!opts) return
       imports.add('always')
@@ -346,11 +356,15 @@ export function toClassSource(json: XStateNode, name = pascal(json.id ?? 'Machin
     })
     for (const [ms, ts] of Object.entries(n.after ?? {})) {
       for (const t of list<string | XStateTransition>(ts)) {
-        const obj = typeof t === 'string' ? { target: t } : t
+        const obj = isString(t) ? { target: t } : t
         const opts = options(source, obj, `after ${ms} on "${path || '(root)'}"`)
         if (!opts) continue
         imports.add('after')
-        members.push(`  @after(${ms}, ${opts})\n  after${ms}${pascal(path || 'root')}() {}`)
+        // A key that isn't a number names a delay: a getter, as `@after('getterName')` reads it.
+        const delay = /^\d+$/.test(ms) ? ms : str(ms)
+        members.push(
+          `  @after(${delay}, ${opts})\n  after${pascal(ms)}${pascal(path || 'root')}() {}`,
+        )
       }
     }
     if (source) {
@@ -362,25 +376,25 @@ export function toClassSource(json: XStateNode, name = pascal(json.id ?? 'Machin
           imports.add(deco)
           const region = regionOf(path)
           members.push(
-            `  @${deco}(${ref(path)}${region ? `, { in: '${region}' }` : ''})\n  ${typeof a === 'string' ? a : a.type}() {}`,
+            `  @${deco}(${ref(path)}${region ? `, { in: ${str(region)} }` : ''})\n  ${ident(isString(a) ? a : a.type)}() {}`,
           )
         }
       }
       for (const inv of list(n.invoke)) {
         imports.add('invoke')
         const opts: string[] = []
-        if (inv.id && inv.id !== inv.src) opts.push(`id: '${inv.id}'`)
+        if (inv.id && inv.id !== inv.src) opts.push(`id: ${str(inv.id)}`)
         for (const [k, ts] of [
           ['onDone', inv.onDone],
           ['onError', inv.onError],
         ] as const) {
           const t = ts && list<string | XStateTransition>(ts)[0]
           if (!t) continue
-          const target = list(typeof t === 'string' ? t : t.target)[0]
+          const target = list(isString(t) ? t : t.target)[0]
           if (target) opts.push(`${k}: ${ref(resolve(path, target))}`)
         }
         members.push(
-          `  @invoke(${ref(path)}${opts.length ? `, { ${opts.join(', ')} }` : ''})\n  async ${inv.src}(_signal: AbortSignal) {\n    // TODO: the "${inv.src}" actor\n  }`,
+          `  @invoke(${ref(path)}${opts.length ? `, { ${opts.join(', ')} }` : ''})\n  async ${ident(inv.src)}(_signal: AbortSignal) {\n    // TODO: the "${oneLine(inv.src)}" actor\n  }`,
         )
       }
     } else if (n.entry || n.exit || n.invoke) unsupported.push('root entry, exit and invoke')
@@ -392,13 +406,13 @@ export function toClassSource(json: XStateNode, name = pascal(json.id ?? 'Machin
 
   const methods = [...events].map(([event, decorators]) => {
     const acts = [...(bodies.get(event) ?? [])]
-    const body = acts.length ? `\n    // xstate actions: ${acts.join(', ')}\n  ` : ''
+    const body = acts.length ? `\n    // xstate actions: ${oneLine(acts.join(', '))}\n  ` : ''
     return `${decorators.join('\n')}\n  ${event}() {${body}}`
   })
   const getters = [...guards].map(g =>
     isIdentifier(g)
       ? `  get ${g}(): boolean {\n    return false // TODO: the "${g}" guard\n  }`
-      : `  // TODO: guard "${g}" is not a getter name`,
+      : `  // TODO: guard "${oneLine(g)}" is not a getter name`,
   )
   if (regions.length) imports.add('region')
   const fields = regions.map(([k, cls]) => `  @region(${cls}) accessor ${k}!: ${cls}`)
@@ -408,12 +422,12 @@ export function toClassSource(json: XStateNode, name = pascal(json.id ?? 'Machin
 
   const body = [...fields, ...getters, ...methods, ...members].join('\n\n')
   return [
-    '// Generated by @switchyard/interop from an xstate config.',
-    `import { ${[...imports].sort().join(', ')} } from '@switchyard/core'`,
+    '// Generated by @switchyard-ts/interop from an xstate config.',
+    `import { ${[...imports].sort().join(', ')} } from '@switchyard-ts/core'`,
     '',
     enums.join('\n\n'),
     '',
-    ...(unsupported.length ? [`// Not converted: ${unsupported.join('; ')}.`, ''] : []),
+    ...(unsupported.length ? [`// Not converted: ${oneLine(unsupported.join('; '))}.`, ''] : []),
     `export class ${name} extends Machine<${stateType}> {`,
     body,
     '}',

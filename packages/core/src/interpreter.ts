@@ -1,6 +1,7 @@
 // An SCXML interpreter over a plain-data config. The algorithm, and most function names, are
 // the W3C recommendation's Appendix D (https://www.w3.org/TR/scxml/#AlgorithmforSCXMLInterpretation).
 // The decorator DSL compiles to this config; nothing here knows about classes or enums.
+import { isFunction, isNumber } from '@sindresorhus/is'
 
 export interface EventObject {
   type: string
@@ -46,8 +47,11 @@ export interface StateConfig {
   always?: TransitionConfig[]
   entry?: Action[]
   exit?: Action[]
-  /** Delayed transitions, keyed by milliseconds; cancelled if the state exits first. */
-  after?: Record<number, TransitionConfig | TransitionConfig[]>
+  /**
+   * Delayed transitions, keyed by milliseconds or a named delay (see `delays`); cancelled if the
+   * state exits first.
+   */
+  after?: Record<number | string, TransitionConfig | TransitionConfig[]>
   /** Actors that run while this state is active. */
   invoke?: InvokeConfig[]
 }
@@ -156,7 +160,8 @@ interface Node {
   history?: 'shallow' | 'deep'
   /** A history state's default transition. */
   fallback?: Transition
-  delays: number[]
+  /** `after` keys: milliseconds, or the name of a delay from the interpreter's `delays`. */
+  delays: string[]
   invokes: { id: string; config: InvokeConfig }[]
 }
 
@@ -175,6 +180,8 @@ export interface InterpreterOptions {
   onUnhandled?(event: EventObject): void
   /** Timers for `after`. Defaults to the global setTimeout; tests pass `manualClock()`. */
   clock?: Clock
+  /** Named `after` delays, read each time their state is entered: `after: { greenFor: … }`. */
+  delays?: Record<string, () => number>
 }
 
 const realClock: Clock = {
@@ -255,7 +262,7 @@ export function createInterpreter(
       return [...configuration].some(n => n.id === path)
     },
     can(e) {
-      return status === 'active' && selectTransitions(e).length > 0
+      return status === 'active' && selectTransitions(e, true).length > 0
     },
     start() {
       if (status !== 'idle') return this
@@ -458,9 +465,15 @@ export function createInterpreter(
         complete: () => done(undefined),
       })
       stop = () => sub.unsubscribe()
-    } else if (typeof result === 'function') {
+    } else if (isFunction(result)) {
       stop = result as () => void
     }
+  }
+
+  function delayOf(key: string): number {
+    const ms = /^\d+$/.test(key) ? Number(key) : options.delays?.[key]?.()
+    if (!isNumber(ms) || !(ms >= 0)) throw new Error(`after: no delay "${key}"`)
+    return ms
   }
 
   // A state's timers start now; its invokes at the end of the macrostep.
@@ -469,8 +482,8 @@ export function createInterpreter(
     if (s.delays.length)
       timers.set(
         s,
-        s.delays.map(ms =>
-          clock.setTimeout(() => interpreter.send({ type: afterEvent(ms, s) }), ms),
+        s.delays.map(key =>
+          clock.setTimeout(() => interpreter.send({ type: afterEvent(key, s) }), delayOf(key)),
         ),
       )
   }
@@ -515,17 +528,18 @@ export function createInterpreter(
   }
 
   // SCXML 5.9: a condition that throws is false, and raises error.execution.
-  function passes(t: Transition, e: EventObject): boolean {
+  // A probe (`can`) only asks: a guard that throws there is false, and raises nothing.
+  function passes(t: Transition, e: EventObject, probe: boolean): boolean {
     if (!t.guard) return true
     try {
       return t.guard(e)
     } catch (error) {
-      internalQueue.push({ type: 'error.execution', error })
+      if (!probe) internalQueue.push({ type: 'error.execution', error })
       return false
     }
   }
 
-  function selectTransitions(e: EventObject | undefined): Transition[] {
+  function selectTransitions(e: EventObject | undefined, probe = false): Transition[] {
     const enabled = new Set<Transition>()
     const atomic = [...configuration].filter(s => s.type === 'atomic' || s.type === 'final')
     for (const state of atomic.sort(byDocumentOrder)) {
@@ -533,7 +547,7 @@ export function createInterpreter(
         const t = s.transitions.find(
           t =>
             (e ? t.event !== undefined && matchesEvent(t.event, e.type) : t.event === undefined) &&
-            passes(t, e ?? event),
+            passes(t, e ?? event, probe),
         )
         if (t) {
           enabled.add(t)
@@ -719,7 +733,7 @@ function build(config: MachineConfig): Node {
       entry: cfg.entry ?? [],
       exit: cfg.exit ?? [],
       transitions: [],
-      delays: Object.keys(cfg.after ?? {}).map(Number),
+      delays: Object.keys(cfg.after ?? {}),
       invokes: (cfg.invoke ?? []).map((config, i) => ({
         id: config.id ?? `${id || '(root)'}:invocation[${i}]`,
         config,
@@ -760,7 +774,7 @@ function build(config: MachineConfig): Node {
       for (const t of [ts].flat()) n.transitions.push(make(event, t))
     for (const t of cfg.always ?? []) n.transitions.push(make(undefined, t))
     for (const [ms, ts] of Object.entries(cfg.after ?? {}))
-      for (const t of [ts].flat()) n.transitions.push(make(afterEvent(Number(ms), n), t))
+      for (const t of [ts].flat()) n.transitions.push(make(afterEvent(ms, n), t))
     for (const { id, config: inv } of n.invokes) {
       if (inv.onDone) n.transitions.push(make(`xstate.done.actor.${id}`, inv.onDone))
       if (inv.onError) n.transitions.push(make(`xstate.error.actor.${id}`, inv.onError))
@@ -779,17 +793,15 @@ function build(config: MachineConfig): Node {
   return root
 }
 
-const afterEvent = (ms: number, n: Node) => `xstate.after.${ms}.${n.id || '(root)'}`
+const afterEvent = (delay: string, n: Node) => `xstate.after.${delay}.${n.id || '(root)'}`
 
 const isThenable = (v: unknown): v is PromiseLike<unknown> =>
-  typeof (v as PromiseLike<unknown> | null)?.then === 'function'
+  isFunction((v as PromiseLike<unknown> | null)?.then)
 const isSubscribable = (v: unknown): v is Subscribable =>
-  typeof (v as Subscribable | null)?.subscribe === 'function'
+  isFunction((v as Subscribable | null)?.subscribe)
 const isInterpreter = (v: unknown): v is Interpreter => {
   const i = v as Partial<Interpreter> | null
-  return ['start', 'send', 'subscribe'].every(
-    k => typeof i?.[k as keyof Interpreter] === 'function',
-  )
+  return ['start', 'send', 'subscribe'].every(k => isFunction(i?.[k as keyof Interpreter]))
 }
 
 /** A clock that only moves when told to: `clock.advance(ms)` fires every timer that falls due. */

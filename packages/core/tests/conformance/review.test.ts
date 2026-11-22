@@ -254,3 +254,30 @@ describe('subscriber reentrancy (expected green: missing coverage, not a defect)
     expect(m.configuration).toEqual([])
   })
 })
+
+describe('can() is read-only', () => {
+  it('a guard that throws during can() queues no error.execution', () => {
+    const m = createInterpreter({
+      initial: 'a',
+      states: {
+        a: {
+          on: {
+            go: {
+              target: 'b',
+              guard: () => {
+                throw new Error('boom')
+              },
+            },
+            noop: {},
+            'error.*': { target: 'failed' },
+          },
+        },
+        b: {},
+        failed: {},
+      },
+    }).start()
+    expect(m.can({ type: 'go' })).toBe(false)
+    m.send({ type: 'noop' })
+    expect(m.configuration).toEqual(['a'])
+  })
+})

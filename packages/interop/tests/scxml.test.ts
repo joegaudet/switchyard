@@ -1,4 +1,4 @@
-import { createInterpreter, type Action, type MachineConfig } from '@switchyard/core'
+import { createInterpreter, type Action, type MachineConfig } from '@switchyard-ts/core'
 import { describe, expect, it } from 'vitest'
 import { fromScxml, toScxml } from '../src/index.js'
 

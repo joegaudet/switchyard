@@ -9,7 +9,7 @@ import FetchDemo from 'docs-app/components/demos/fetch-demo'
     the same as xstate v5, and has everything xstate does: hierarchy, parallel regions, history,
     guards, delays, invoked and spawned actors.
   </p>
-  <pre><code class="language-bash">npm install @switchyard/core @switchyard/ember @real-enums/core</code></pre>
+  <pre><code class="language-bash">npm install @switchyard-ts/core @switchyard-ts/ember @real-enums/core</code></pre>
   <p>
     Below is a whole machine. Press <em>Fetch</em> with the API down: it fails, and
     <em>Retry</em> resumes where it was (that is the <code>history</code> target). After three
