@@ -1,5 +1,12 @@
 # @switchyard-ts/graph
 
+## 0.4.0
+
+### Patch Changes
+
+- Updated dependencies [ca2ba5e]
+  - @switchyard-ts/core@0.4.0
+
 ## 0.3.0
 
 ### Patch Changes
