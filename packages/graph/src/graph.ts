@@ -3,8 +3,10 @@
 import { isFunction } from '@sindresorhus/is'
 import type { Machine, MachineConfig, StateConfig, TransitionConfig } from '@switchyard-ts/core'
 
+/** A state's kind, as SCXML names them; `atomic` has no children. */
 export type StateType = 'atomic' | 'compound' | 'parallel' | 'final' | 'history'
 
+/** One state in a {@link Graph}, with its children nested under it. */
 export interface GraphState {
   /** The state's path, `''` for the root. */
   id: string
@@ -21,6 +23,7 @@ export interface GraphState {
   children: GraphState[]
 }
 
+/** One transition in a {@link Graph}, between states named by id. */
 export interface GraphTransition {
   source: string
   /** Undefined for a targetless transition. */
@@ -33,13 +36,19 @@ export interface GraphTransition {
   label: string
 }
 
+/**
+ * A machine's states and transitions, as {@link toGraph} reads them: the model every text and
+ * SVG renderer draws from.
+ */
 export interface Graph {
   name: string
   root: GraphState
   transitions: GraphTransition[]
 }
 
+/** A Machine subclass: anything with the static `toConfig()` that Machine provides. */
 export type MachineClass = (abstract new (...args: never[]) => Machine<unknown>) & {
+  /** The interpreter config the class's decorators compile to. */
   toConfig(): MachineConfig
 }
 
@@ -110,6 +119,7 @@ export function states(graph: Graph): GraphState[] {
   return out
 }
 
+/** What {@link describeInterface} returns: the events, guards, actions and invokes of a machine. */
 export interface MachineInterface {
   name: string
   /** Events (the machine's event methods) and the states that handle them. */
@@ -156,6 +166,7 @@ export function describeInterface(
   }
 }
 
+/** One machine in the live actor tree that {@link topology} returns. */
 export interface ActorNode {
   id: string
   machine: string

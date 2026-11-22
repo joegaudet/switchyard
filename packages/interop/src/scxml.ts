@@ -16,6 +16,7 @@ const SY_NS = 'https://joegaudet.com/switchyard'
 
 type MachineClass = (abstract new (...args: never[]) => unknown) & { toConfig(): MachineConfig }
 
+/** The guards and actions {@link fromScxml} puts in place of the document's conditions and logs. */
 export interface ScxmlImplementations {
   /** By `cond` text. */
   guards?: Record<string, Guard>

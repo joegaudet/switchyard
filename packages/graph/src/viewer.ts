@@ -48,16 +48,19 @@ export async function mountDiagram(host: Element, machine: Machine<unknown>): Pr
 export class SwitchyardDiagram extends HTMLElement {
   #off?: Promise<() => void>
 
+  /** Draws this machine, replacing any drawn before, and follows its state. */
   set machine(machine: Machine<unknown>) {
     void this.#off?.then(off => off())
     this.#off = mountDiagram(this, machine)
   }
 
+  /** Stops following the machine when the element leaves the document. */
   disconnectedCallback() {
     void this.#off?.then(off => off())
   }
 }
 
+/** Registers {@link SwitchyardDiagram} as a custom element, once, under `name`. */
 export function defineDiagramElement(name = 'switchyard-diagram'): void {
   if (!customElements.get(name)) customElements.define(name, SwitchyardDiagram)
 }

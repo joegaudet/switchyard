@@ -1,0 +1,1 @@
+{ "intentionallyNotExported": ["src/xstate.ts:MachineClass", "src/scxml.ts:MachineClass"] }

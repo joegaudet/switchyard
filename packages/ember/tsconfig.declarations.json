@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["declarations/**/*"],
+  "exclude": [],
+  "compilerOptions": { "rootDir": "./declarations", "noEmit": true }
+}

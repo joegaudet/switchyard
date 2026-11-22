@@ -9,3 +9,6 @@ playwright-report/
 declarations/
 tmp/
 docs/site/guide/
+docs/api/
+docs/api-md/
+_site/

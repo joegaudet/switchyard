@@ -31,6 +31,28 @@ test under both. Standard decorators record on `context.metadata`; legacy ones, 
 no metadata, record in a `WeakMap` keyed by the prototype. `decorationsOf()` in
 `packages/core/src/machine.ts` reads both.
 
+## The website
+
+`docs/site` is the landing page; `pnpm guide:build` builds the guide (`docs-app/`) into
+`docs/site/guide`. The **API reference** at `/switchyard/api/` is generated: TypeDoc builds it from
+the packages' TSDoc (`pnpm docs:api`, after `pnpm build`) into `docs/api/`, styled by
+`docs/api.css` and `scripts/typedoc-site.mjs`, with `docs/api/llms-full.txt` beside it. The Ember
+addon is documented from its emitted `declarations/`, since TypeDoc can't read `.gts`. Pages
+deploys it from the latest release tag's sources, after each release. Every warning fails
+`pnpm test`: an exported declaration without a doc comment, a broken `{@link}`, or an exported
+signature that names a type the package doesn't export. If that type is meant to stay private,
+list it in the package's `typedoc.json` `intentionallyNotExported`. `@switchyard-ts/core` is not
+yet held to the doc-comment rule (its `typedoc.json` turns `notDocumented` off) until its
+exports are documented.
+
+To preview, assembled the way Pages deploys it:
+
+```bash
+pnpm build && pnpm guide:build && pnpm docs:api
+rm -rf _site && cp -R docs/site _site && cp -R docs/api _site/api
+python3 -m http.server 8766 --directory _site   # http://localhost:8766/api/
+```
+
 ## Releasing
 
 A release is cut by pushing a tag. Nothing publishes on merge.
