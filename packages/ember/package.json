@@ -1,0 +1,98 @@
+{
+  "name": "@switchyard/ember",
+  "version": "0.0.0",
+  "description": "Switchyard statecharts in Ember: tracked state, owner-bound lifetimes, template helpers, test waiters.",
+  "keywords": [
+    "ember-addon",
+    "ember",
+    "statechart",
+    "state-machine",
+    "xstate"
+  ],
+  "license": "MIT",
+  "author": "Joe Gaudet joe@joegaudet.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joegaudet/switchyard.git",
+    "directory": "packages/ember"
+  },
+  "homepage": "https://joegaudet.com/switchyard/",
+  "bugs": "https://github.com/joegaudet/switchyard/issues",
+  "exports": {
+    ".": {
+      "types": "./declarations/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./resource": {
+      "types": "./declarations/resource.d.ts",
+      "default": "./dist/resource.js"
+    },
+    "./addon-main.js": "./addon-main.cjs"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "declarations/*"
+      ]
+    }
+  },
+  "files": [
+    "addon-main.cjs",
+    "declarations",
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "rollup --config",
+    "typecheck": "ember-tsc --noEmit"
+  },
+  "dependencies": {
+    "@ember/test-waiters": "^4.1.2",
+    "@embroider/addon-shim": "^1.10.3",
+    "decorator-transforms": "^2.4.0"
+  },
+  "peerDependencies": {
+    "@switchyard/core": "workspace:^",
+    "ember-resources": ">= 7.0.0",
+    "ember-source": ">= 6.12.0"
+  },
+  "peerDependenciesMeta": {
+    "ember-resources": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "ember": {
+    "edition": "octane"
+  },
+  "ember-addon": {
+    "version": 2,
+    "type": "addon",
+    "main": "addon-main.cjs"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.13",
+    "@babel/plugin-transform-typescript": "^7.29.15",
+    "@babel/runtime": "^7.29.15",
+    "@ember/library-tsconfig": "^3.0.0",
+    "@embroider/addon-dev": "^8.5.0",
+    "@glimmer/component": "^2.2.1",
+    "@glimmer/tracking": "^1.1.2",
+    "@glint/ember-tsc": "^1.14.4",
+    "@glint/template": "^1.11.1",
+    "@rollup/plugin-babel": "^7.1.0",
+    "@switchyard/core": "workspace:^",
+    "babel-plugin-ember-template-compilation": "^4.0.1",
+    "ember-resources": "^7.1.0",
+    "ember-source": "~7.3.1",
+    "rollup": "^4.68.7",
+    "typescript": "~6.0.3"
+  }
+}

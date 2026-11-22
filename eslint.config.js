@@ -5,6 +5,10 @@ export default tseslint.config(
   {
     ignores: [
       '**/dist/**',
+      '**/declarations/**',
+      // Ember build tooling, kept as ember-cli generates it.
+      'test-app/config/**',
+      'test-app/*.{mjs,cjs}',
       '**/*.d.ts',
       '.claude/**',
       // Standalone StackBlitz apps, each with its own tooling.
@@ -34,6 +38,7 @@ export default tseslint.config(
       'eslint.config.js',
       'packages/*/tsup.config.ts',
       'packages/*/vitest.config.ts',
+      'packages/*/rollup.config.mjs',
       'packages/*/tests/**/*.ts',
       'packages/*/tests/**/*.tsx',
       'scripts/*.mjs',
