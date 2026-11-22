@@ -1,5 +1,26 @@
 # @switchyard-ts/eslint-plugin
 
+## 0.3.0
+
+### Minor Changes
+
+- 8c4f52d: Guards can point at the getter they read, `guard: (m: Fetch) => m.hasRetriesLeft`, so TypeScript
+  checks the name; diagrams still label it `hasRetriesLeft`. `m.can(FetchState.Loading)` asks
+  whether some event would enter a state now, and `{ via: m.retry }` asks about one event. The
+  Ember `can` helper takes a state too: `(can this.fetch FetchState.Loading via=this.fetch.retry)`.
+  Guard names and `m.can.retry` keep working.
+
+  `m.can()` and `m.matches()` take only the machine's states, and reject every other state.
+  **Breaking:** each state enum declares `private declare readonly brand: never` (type-only;
+  TypeScript compares classes by shape, and a private member makes each enum its own type), and an
+  enum with `children` or `regions` names them, `class FetchState extends State<Attempt>`.
+  `State.of` checks that `children` is that enum. The new `switchyard/state-brand` lint rule
+  (in `recommended`) reports a missing brand and adds it.
+
+### Patch Changes
+
+- 8df225f: Doc comments on every export that lacked one, which now show in editors and in the API reference at https://joegaudet.com/switchyard/api/.
+
 ## 0.2.0
 
 No changes in this release.

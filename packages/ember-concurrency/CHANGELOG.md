@@ -1,5 +1,14 @@
 # @switchyard-ts/ember-concurrency
 
+## 0.3.0
+
+### Patch Changes
+
+- Updated dependencies [8df225f]
+- Updated dependencies [8c4f52d]
+  - @switchyard-ts/ember@0.3.0
+  - @switchyard-ts/core@0.3.0
+
 ## 0.2.0
 
 ### Minor Changes

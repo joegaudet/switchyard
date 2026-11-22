@@ -1,6 +1,6 @@
 {
   "name": "@switchyard-ts/harnessed",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Model-based tests for Switchyard machines, driven through harnessed component harnesses.",
   "keywords": [
     "statechart",
