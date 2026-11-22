@@ -1,0 +1,58 @@
+{
+  "name": "@switchyard/harnessed",
+  "version": "0.0.0",
+  "description": "Model-based tests for Switchyard machines, driven through harnessed component harnesses.",
+  "keywords": [
+    "statechart",
+    "model-based-testing",
+    "harnessed"
+  ],
+  "license": "MIT",
+  "author": "Joe Gaudet joe@joegaudet.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joegaudet/switchyard.git",
+    "directory": "packages/harnessed"
+  },
+  "homepage": "https://joegaudet.com/switchyard/",
+  "bugs": "https://github.com/joegaudet/switchyard/issues",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "peerDependencies": {
+    "@switchyard/core": "workspace:^",
+    "@switchyard/test": "workspace:^"
+  },
+  "devDependencies": {
+    "@harnessed-ts/core": "^0.8.3",
+    "@harnessed-ts/dom": "^0.8.3",
+    "@real-enums/core": "^2.2.0",
+    "@switchyard/core": "workspace:^",
+    "@switchyard/test": "workspace:^",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/user-event": "^14.6.13"
+  }
+}

@@ -9,6 +9,12 @@
     },
     {
       "path": "./packages/interop"
+    },
+    {
+      "path": "./packages/test"
+    },
+    {
+      "path": "./packages/harnessed"
     }
   ]
 }
