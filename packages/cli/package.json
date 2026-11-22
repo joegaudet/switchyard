@@ -1,0 +1,71 @@
+{
+  "name": "@switchyard/cli",
+  "version": "0.0.0",
+  "description": "The switchyard command: diagrams, xstate/SCXML export and import from machine modules; plus a Vite plugin.",
+  "keywords": [
+    "statechart",
+    "cli",
+    "vite-plugin",
+    "diagram"
+  ],
+  "license": "MIT",
+  "author": "Joe Gaudet joe@joegaudet.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joegaudet/switchyard.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://joegaudet.com/switchyard/",
+  "bugs": "https://github.com/joegaudet/switchyard/issues",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "default": "./dist/vite.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "peerDependencies": {
+    "@switchyard/core": "workspace:^",
+    "typescript": ">=5.2"
+  },
+  "devDependencies": {
+    "@switchyard/core": "workspace:^",
+    "@real-enums/core": "^2.2.0"
+  },
+  "bin": {
+    "switchyard": "./dist/cli.js"
+  },
+  "dependencies": {
+    "@switchyard/graph": "workspace:^",
+    "@switchyard/interop": "workspace:^",
+    "esbuild": "^0.27.7"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
+  }
+}

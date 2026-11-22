@@ -1,0 +1,8 @@
+{
+  "id": "player",
+  "initial": "stopped",
+  "states": {
+    "stopped": { "on": { "play": "playing" } },
+    "playing": { "on": { "stop": "stopped" } }
+  }
+}

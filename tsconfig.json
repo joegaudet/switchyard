@@ -15,6 +15,18 @@
     },
     {
       "path": "./packages/harnessed"
+    },
+    {
+      "path": "./packages/inspector"
+    },
+    {
+      "path": "./packages/cli"
+    },
+    {
+      "path": "./packages/eslint-plugin"
+    },
+    {
+      "path": "./packages/skills"
     }
   ]
 }

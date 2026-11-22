@@ -493,6 +493,8 @@ export abstract class Machine<S = State> {
   #system = new Map<string, Machine<unknown>>()
   #spawned = new Map<string, Machine<unknown>>()
   #invoked = new Map<string, Machine<unknown>>()
+  // Subscribers, for changes that are not transitions (a spawn).
+  #listenersOf = new Set<() => void>()
   #listeners = new Map<string, Set<(event: { type: string }) => void>>()
 
   // Module-internal: lets compile() link an invoked child, which needs the private fields.
@@ -635,7 +637,11 @@ export abstract class Machine<S = State> {
   spawn<M extends Machine<unknown>>(child: M, options: { id: string; systemId?: string }): M {
     Machine[INTERNAL].adopt(this, child, options.systemId)
     this.#spawned.set(options.id, child)
-    return child.start()
+    child.start()
+    // No transition happened, but `actors` changed: tell whoever is watching.
+    configured.reactivity?.dirty(this)
+    for (const listener of [...this.#listenersOf]) listener()
+    return child
   }
 
   /** Running child machines, invoked then spawned, by id. Diagrams draw the actor tree from it. */
@@ -686,8 +692,13 @@ export abstract class Machine<S = State> {
 
   /** Called after every event that took a transition, and once on start. */
   subscribe(listener: (machine: this) => void): () => void {
-    const off = this.#create().subscribe(() => listener(this))
+    const notify = () => listener(this)
+    const off = this.#create().subscribe(notify)
+    this.#listenersOf.add(notify)
     void this.#i
-    return off
+    return () => {
+      off()
+      this.#listenersOf.delete(notify)
+    }
   }
 }
