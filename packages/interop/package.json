@@ -1,0 +1,57 @@
+{
+  "name": "@switchyard/interop",
+  "version": "0.0.0",
+  "description": "Switchyard interop: xstate JSON export and import, xstate-to-class codegen, SCXML import and export.",
+  "keywords": [
+    "statechart",
+    "xstate",
+    "scxml",
+    "codegen"
+  ],
+  "license": "MIT",
+  "author": "Joe Gaudet joe@joegaudet.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joegaudet/switchyard.git",
+    "directory": "packages/interop"
+  },
+  "homepage": "https://joegaudet.com/switchyard/",
+  "bugs": "https://github.com/joegaudet/switchyard/issues",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "peerDependencies": {
+    "@switchyard/core": "workspace:^"
+  },
+  "devDependencies": {
+    "@real-enums/core": "^2.2.0",
+    "@switchyard/core": "workspace:^",
+    "xstate": "^5.33.4"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.12.1"
+  }
+}
