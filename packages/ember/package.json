@@ -1,6 +1,6 @@
 {
   "name": "@switchyard-ts/ember",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Switchyard statecharts in Ember: tracked state, owner-bound lifetimes, template helpers, test waiters.",
   "keywords": [
     "ember-addon",

@@ -1,6 +1,6 @@
 {
   "name": "@switchyard-ts/test",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Testing Switchyard machines: model paths, transition coverage, matchers, a manual clock.",
   "keywords": [
     "statechart",

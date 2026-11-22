@@ -1,6 +1,6 @@
 {
   "name": "@switchyard-ts/cli",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "The switchyard command: diagrams, xstate/SCXML export and import from machine modules; plus a Vite plugin.",
   "keywords": [
     "statechart",
