@@ -263,6 +263,7 @@ export function toClassSource(json: XStateNode, name = pascal(json.id ?? 'Machin
       keys.splice(0, 0, ...keys.splice(keys.indexOf(n.initial), 1))
     enumOf.set(path, className)
     const members: string[] = []
+    const children: string[] = []
     for (const k of keys) {
       const c = n.states![k]!
       const childPath = path ? `${path}.${k}` : k
@@ -273,6 +274,7 @@ export function toClassSource(json: XStateNode, name = pascal(json.id ?? 'Machin
       else if (c.states) {
         const child = `${name}${pascal(childPath)}`
         declareEnum(c, childPath, child)
+        children.push(child)
         opts.push(`children: ${child}`)
         const h = Object.entries(c.states).find(([, s]) => s.type === 'history')
         if (h) {
@@ -285,7 +287,10 @@ export function toClassSource(json: XStateNode, name = pascal(json.id ?? 'Machin
         `  static ${pascal(k)} = ${className}.of(${str(k)}${opts.length ? `, { ${opts.join(', ')} }` : ''})`,
       )
     }
-    enums.push(`export class ${className} extends State {\n${members.join('\n')}\n}`)
+    const base = children.length ? `State<${children.join(' | ')}>` : 'State'
+    enums.push(
+      `export class ${className} extends ${base} {\n  private declare readonly brand: never\n${members.join('\n')}\n}`,
+    )
   }
 
   if (json.type === 'parallel') {

@@ -24,7 +24,8 @@ import EditorDemo from 'docs-app/components/demos/editor-demo'
   <h2>Regions inside a state</h2>
   <p>
     Regions can also live inside one state of a larger machine:
-    <code>static Editing = Doc.of('editing', &lbrace; regions: &lbrace; bold: Toggle, italic: Toggle &rbrace; &rbrace;)</code>.
+    <code>static Editing = Doc.of('editing', &lbrace; regions: &lbrace; bold: Toggle, italic: Toggle &rbrace; &rbrace;)</code>,
+    in <code>class Doc extends State&lt;Toggle&gt;</code>.
     Both regions run while <code>editing</code> is active; their transitions name the region by
     its path, <code>&lbrace; in: 'editing.bold' &rbrace;</code>.
   </p>

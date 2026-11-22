@@ -15,11 +15,13 @@ Full guide: https://joegaudet.com/switchyard/guide/
 
 ```ts
 class Attempt extends State {
+  declare private readonly brand: never
   static First = Attempt.of('first')
   static Retrying = Attempt.of('retrying')
 }
 
-class FetchState extends State {
+class FetchState extends State<Attempt> {
+  declare private readonly brand: never
   static Idle = FetchState.of('idle') // the first member is the initial state
   static Loading = FetchState.of('loading', { children: Attempt, history: 'shallow' })
   static Failed = FetchState.of('failed')
@@ -46,7 +48,11 @@ class Fetch extends Machine<FetchState> {
   @transition({ from: FetchState.Idle, to: FetchState.Loading })
   fetch(url: string) {} // calling m.fetch(url) sends the event; the body is the transition's action
 
-  @transition({ from: FetchState.Failed, to: history(FetchState.Loading), guard: 'hasRetriesLeft' })
+  @transition({
+    from: FetchState.Failed,
+    to: history(FetchState.Loading),
+    guard: (m: Fetch) => m.hasRetriesLeft,
+  })
   @transition({ from: FetchState.Done, to: FetchState.Idle }) // stacked: one event, several sources
   retry() {
     this.retries++
@@ -63,11 +69,19 @@ class Fetch extends Machine<FetchState> {
 - **Event bodies are synchronous.** Async work goes in `@invoke` (or is started from `@onEntry`).
   A body that returns a promise warns in development.
 - Calling another event method inside a body **queues** it; it runs after the current event.
-- `guard` names a getter (or field/method) of the class. Combine with `and()`, `or()`, `not()`.
+- `guard` reads a getter through the machine, `(m: Fetch) => m.hasRetriesLeft`, so TypeScript
+  checks it; diagrams label it `hasRetriesLeft`. Combine with `and()`, `or()`, `not()`. A getter's
+  name as a string also works; prefer the typed form.
 - No `from`: the transition is handled in every state. No `to`: the body runs, nothing exits.
 - `@onEntry(S)`, `@onExit(S)`, `@always({ from, to, guard })` (eventless), `@region(E) accessor x!: E`
   for parallel regions (the root becomes parallel; `m.state` is `{ x: E.Value, … }`). A state
   enum shared by two regions needs `{ in: 'regionName' }` on decorators that use it.
+- Every state enum declares `private declare readonly brand: never` (type-only). TypeScript
+  compares classes by shape; the private member makes each enum its own type. The
+  `switchyard/state-brand` lint rule adds it.
+- A compound state's enum names its child enums: `class FetchState extends State<Attempt>`
+  (several: `State<A | B>`, regions included). `m.can()` and `m.matches()` then take
+  only the machine's states.
 - Regions inside one state: `S.of('editing', { regions: { bold: Toggle } })`, addressed with
   `{ in: 'editing.bold' }`.
 - A method may not be named after Machine's own members (`stop`, `send`, `state`, …); name the
@@ -77,7 +91,8 @@ class Fetch extends Machine<FetchState> {
 
 ## Reading a machine
 
-`m.state` (the root value), `m.matches(State.X)` (any depth), `m.can.retry`, `m.status`,
+`m.state` (the root value), `m.matches(State.X)` (any depth), `m.can(State.X)` (some event
+would enter it now; `{ via: m.retry }` for one event), `m.can.retry`, `m.status`,
 `m.snapshot()` / `m.restore(snapshot)`, `m.subscribe(fn)`, `m.actors`, `m.spawn(child, { id })`,
 `m.sendTo(id, event)`, `this.sendParent(event)`, `this.emit(type, payload)` / `m.on(type, fn)`,
 `await waitFor(m, pred, { timeout })`, `await toPromise(m)`.
@@ -87,7 +102,7 @@ class Fetch extends Machine<FetchState> {
 Import `@switchyard-ts/ember` once (it wires tracking and test waiters). Then
 `fetch = machine(this, new Fetch())` in a component or service (stopped on destroy), and in
 templates `{{on "click" (send this.fetch "retry")}}`, `(matches this.fetch FetchState.Done)`,
-`(can this.fetch "retry")`. `<SwitchyardDebug @machine={{this.fetch}} />` from
+`(can this.fetch FetchState.Loading via=this.fetch.retry)`. `<SwitchyardDebug @machine={{this.fetch}} />` from
 `@switchyard-ts/ember/debug` shows the live chart. To run an existing ember-concurrency task, return
 `perform(signal, this.task, ...args)` (from `@switchyard-ts/ember-concurrency`) from an `@invoke`
 method; don't hand-roll cancellation.

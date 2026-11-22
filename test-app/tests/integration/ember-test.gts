@@ -26,9 +26,14 @@ class FetchView extends Component {
     <button
       type="button"
       data-test-fetch
-      disabled={{if (can this.fetch "fetch") false true}}
+      disabled={{if (can this.fetch FetchState.Loading via=this.fetch.fetch) false true}}
       {{on "click" (send this.fetch "fetch")}}
     >Fetch</button>
+    <button
+      type="button"
+      data-test-load
+      disabled={{if (can this.fetch FetchState.Loading) false true}}
+    >Load</button>
   </template>
 }
 
@@ -74,12 +79,15 @@ module('@switchyard-ts/ember', function (hooks) {
     await render(<template><FetchView /></template>)
     assert.dom('[data-test-state]').hasText('Idle')
     assert.dom('[data-test-fetch]').isNotDisabled()
+    assert.dom('[data-test-load]').isNotDisabled()
 
     await click('[data-test-fetch]')
 
     assert.dom('[data-test-state]').hasText('Done')
     assert.dom('[data-test-data]').hasText('loaded')
     assert.dom('[data-test-fetch]').isDisabled()
+    // refetch can still enter Loading; fetch can't
+    assert.dom('[data-test-load]').isNotDisabled()
   })
 
   test('settled() waits for @after timers', async function (assert) {

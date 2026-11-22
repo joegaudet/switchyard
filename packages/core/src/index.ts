@@ -1,4 +1,4 @@
-export { State, type StateOptions } from './state.js'
+export { State, type ChildrenOf, type StateOptions } from './state.js'
 export {
   after,
   always,
@@ -18,6 +18,9 @@ export {
   transition,
   waitFor,
   type Configuration,
+  type Can,
+  type CanEnter,
+  type StatesOf,
   type GuardRef,
   type InvokeOptions,
   type Messages,

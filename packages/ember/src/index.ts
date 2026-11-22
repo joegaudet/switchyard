@@ -3,6 +3,7 @@
 import { tracked } from '@glimmer/tracking'
 import { registerDestructor } from '@ember/destroyable'
 import { buildWaiter, waitForPromise } from '@ember/test-waiters'
+import { isString } from '@sindresorhus/is'
 import { configure, type Clock, type Machine, type State } from '@switchyard-ts/core'
 
 class Version {
@@ -76,9 +77,16 @@ export function matches(target: Machine<unknown>, state: State): boolean {
   return target.matches(state)
 }
 
-/** `<button disabled={{not (can this.fetch "retry")}}>` */
-export function can(target: Machine<unknown>, event: string): boolean {
-  return target.can[event] ?? false
+/**
+ * `<button disabled={{not (can this.fetch FetchState.Loading via=this.fetch.retry)}}>`: whether
+ * an event (`via` alone, if given) would enter the state now. `(can this.fetch "retry")` also works.
+ */
+export function can(
+  target: Machine<unknown>,
+  to: State | string,
+  options?: { via?: (...args: never[]) => unknown },
+): boolean {
+  return isString(to) ? (target.can[to] ?? false) : target.can(to, options)
 }
 
 export { announcement, SwitchyardAnnouncer } from './announcer.gts'

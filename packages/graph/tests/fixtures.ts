@@ -11,11 +11,13 @@ import {
 } from '@switchyard-ts/core'
 
 export class Attempt extends State {
+  declare private readonly brand: never
   static First = Attempt.of('first')
   static Retrying = Attempt.of('retrying')
 }
 
-export class FetchState extends State {
+export class FetchState extends State<Attempt> {
+  declare private readonly brand: never
   static Idle = FetchState.of('idle')
   static Loading = FetchState.of('loading', { children: Attempt, history: 'shallow' })
   static Failed = FetchState.of('failed')
@@ -60,6 +62,7 @@ export class Fetch extends Machine<FetchState> {
 }
 
 export class Toggle extends State {
+  declare private readonly brand: never
   static Off = Toggle.of('off')
   static On = Toggle.of('on')
 }
@@ -73,6 +76,7 @@ export class Editor extends Machine<{ bold: Toggle; italic: Toggle }> {
 }
 
 export class Step extends State {
+  declare private readonly brand: never
   static Sending = Step.of('sending')
   static Sent = Step.of('sent', { final: true })
 }
@@ -83,6 +87,7 @@ export class FileUpload extends Machine<Step> {
 }
 
 export class QueueState extends State {
+  declare private readonly brand: never
   static Working = QueueState.of('working')
 }
 

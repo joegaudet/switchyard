@@ -3,11 +3,13 @@ import { describe, expect, it } from 'vitest'
 import { State } from '../src/index.js'
 
 class Attempt extends State {
+  declare private readonly brand: never
   static First = Attempt.of('first')
   static Retrying = Attempt.of('retrying')
 }
 
-class Fetch extends State {
+class Fetch extends State<Attempt> {
+  declare private readonly brand: never
   static Idle = Fetch.of('idle')
   static Loading = Fetch.of('loading', { children: Attempt, history: 'shallow' })
   static Done = Fetch.of('done', { final: true })

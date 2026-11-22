@@ -5,6 +5,7 @@ import { is } from '@real-enums/core'
 import { after, invoke, Machine, State, transition } from '@switchyard-ts/core'
 
 export class FetchState extends State {
+  declare private readonly brand: never
   static Idle = FetchState.of('idle')
   static Loading = FetchState.of('loading')
   static Done = FetchState.of('done')
@@ -18,6 +19,9 @@ export class Fetch extends Machine<FetchState> {
 
   @transition({ from: FetchState.Idle, to: FetchState.Loading })
   fetch() {}
+
+  @transition({ from: FetchState.Done, to: FetchState.Loading })
+  refetch() {}
 
   @invoke(FetchState.Loading, { onDone: FetchState.Done })
   async load() {
@@ -35,6 +39,7 @@ export class Timer extends Machine<FetchState> {
 }
 
 export class SessionState extends State {
+  declare private readonly brand: never
   static LoggedOut = SessionState.of('loggedOut')
   static LoggedIn = SessionState.of('loggedIn')
 }
@@ -54,6 +59,7 @@ export class Session extends Machine<SessionState> {
 }
 
 export class OrderState extends State {
+  declare private readonly brand: never
   static Pending = OrderState.of('pending')
   static Shipped = OrderState.of('shipped')
   static Delivered = OrderState.of('delivered')

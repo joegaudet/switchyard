@@ -19,11 +19,13 @@ import {
 } from '../../src/index.js'
 
 export class Attempt extends State {
+  declare private readonly brand: never
   static First = Attempt.of('first')
   static Retrying = Attempt.of('retrying')
 }
 
-export class FetchState extends State {
+export class FetchState extends State<Attempt> {
+  declare private readonly brand: never
   static Idle = FetchState.of('idle')
   static Loading = FetchState.of('loading', { children: Attempt, history: 'shallow' })
   static Done = FetchState.of('done')
@@ -65,14 +67,18 @@ export class Fetch extends Machine<FetchState> {
   @transition({
     from: FetchState.Failed,
     to: history(FetchState.Loading),
-    guard: and('hasRetriesLeft', 'isOnline'),
+    guard: and((m: Fetch) => m.hasRetriesLeft, 'isOnline'),
   })
   @transition({ from: FetchState.Done, to: FetchState.Idle })
   retry() {
     this.retries++
   }
 
-  @transition({ from: FetchState.Failed, to: FetchState.Idle, guard: not('hasRetriesLeft') })
+  @transition({
+    from: FetchState.Failed,
+    to: FetchState.Idle,
+    guard: not((m: Fetch) => m.hasRetriesLeft),
+  })
   giveUp() {}
 
   @transition({ to: FetchState.Idle })
@@ -97,6 +103,7 @@ export class StrictFetch extends Fetch {
 }
 
 export class Toggle extends State {
+  declare private readonly brand: never
   static Off = Toggle.of('off')
   static On = Toggle.of('on')
 }
@@ -114,6 +121,7 @@ export class Editor extends Machine<{ bold: Toggle; italic: Toggle }> {
 }
 
 export class Level extends State {
+  declare private readonly brand: never
   static Low = Level.of('low')
   static High = Level.of('high')
 }
@@ -131,13 +139,14 @@ export class Counter extends Machine<Level> {
     this.count++
   }
 
-  @always({ from: Level.Low, to: Level.High, guard: 'isHigh' })
+  @always({ from: Level.Low, to: Level.High, guard: (m: Counter) => m.isHigh })
   promote() {
     this.log.push('promoted')
   }
 }
 
 export class Step extends State {
+  declare private readonly brand: never
   static A = Step.of('a')
   static B = Step.of('b')
   static C = Step.of('c')
@@ -178,6 +187,7 @@ export function ambiguousRegion(): Machine<unknown> {
 }
 
 export class Job extends State {
+  declare private readonly brand: never
   static Idle = Job.of('idle')
   static Running = Job.of('running')
   static Done = Job.of('done')
@@ -210,6 +220,7 @@ export class Worker extends Machine<Job> {
 }
 
 export class Upload extends State {
+  declare private readonly brand: never
   static Sending = Upload.of('sending')
   static Sent = Upload.of('sent', { final: true })
 }
@@ -230,6 +241,7 @@ export class FileUpload extends Machine<Upload> {
 }
 
 export class Queue extends State {
+  declare private readonly brand: never
   static Working = Queue.of('working')
   static Empty = Queue.of('empty')
 }

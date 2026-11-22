@@ -22,11 +22,11 @@ export default class WizardDemo extends Component {
         <Form @model={{this.draft}} @onChange={{this.changed}} as |f|>
           {{#if (matches this.wizard Details.Name)}}
             <f.Field @for="name" @control="text" @label="Your name" />
-            <button type="button" disabled={{not (can this.wizard "next")}} {{on "click" (send this.wizard "next")}}>Next</button>
+            <button type="button" disabled={{not (can this.wizard Details.Email)}} {{on "click" (send this.wizard "next")}}>Next</button>
           {{else}}
             <f.Field @for="email" @control="email" @label="Email" />
             <button type="button" class="secondary" {{on "click" (send this.wizard "previous")}}>Back</button>
-            <button type="button" disabled={{not (can this.wizard "review")}} {{on "click" (send this.wizard "review")}}>Review</button>
+            <button type="button" disabled={{not (can this.wizard Step.Review)}} {{on "click" (send this.wizard "review")}}>Review</button>
           {{/if}}
         </Form>
       {{else if (matches this.wizard Step.Review)}}

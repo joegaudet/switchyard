@@ -4,6 +4,7 @@ import { perform } from '@switchyard-ts/ember-concurrency'
 import { task, timeout } from 'ember-concurrency'
 
 export class SearchState extends State {
+  declare private readonly brand: never
   static Idle = SearchState.of('idle')
   static Searching = SearchState.of('searching')
   static Results = SearchState.of('results')

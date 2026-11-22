@@ -1,11 +1,13 @@
 import { after, Machine, State, transition } from '@switchyard-ts/core'
 
 export class Crossing extends State {
+  declare private readonly brand: never
   static Wait = Crossing.of('wait')
   static Walk = Crossing.of('walk')
 }
 
-export class Light extends State {
+export class Light extends State<Crossing> {
+  declare private readonly brand: never
   static Green = Light.of('green')
   static Yellow = Light.of('yellow')
   static Red = Light.of('red', { children: Crossing })

@@ -8,7 +8,14 @@ import LightDemo from 'docs-app/components/demos/light-demo'
     templates, and works with <code>match()</code> for exhaustive branching. The first member is
     the initial state.
   </p>
-  <pre><code class="language-typescript">class Light extends State &lbrace;
+  <p>
+    The <code>brand</code> line is type-only and emits nothing. TypeScript compares classes by
+    shape, so without it two enums with the same members would be the same type; a private member
+    makes each enum its own, and <code>m.can()</code> refuses a state of another machine. The
+    <code>switchyard/state-brand</code> lint rule adds it for you.
+  </p>
+  <pre><code class="language-typescript">class Light extends State&lt;Crossing&gt; &lbrace;
+  private declare readonly brand: never
   static Green = Light.of('green')
   static Yellow = Light.of('yellow')
   static Red = Light.of('red', &lbrace; children: Crossing &rbrace;)
@@ -22,6 +29,13 @@ import LightDemo from 'docs-app/components/demos/light-demo'
     exhaustive on its own: adding a crossing state does not touch <code>Light</code>.
     <code>m.state</code> is always the top level; <code>m.matches(Crossing.Walk)</code> asks at any
     depth.
+  </p>
+  <p>
+    The parent class names its children's enum too, <code>extends State&lt;Crossing&gt;</code>,
+    so TypeScript knows every state the machine has: <code>m.matches()</code> and
+    <code>m.can()</code> accept <code>Crossing.Walk</code> and reject a state of another machine.
+    <code>children</code> must be the enum it names. A state with several child enums (or
+    regions) names them all: <code>State&lt;Bold | Italic&gt;</code>.
   </p>
   <h2>Final states</h2>
   <p>

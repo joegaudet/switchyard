@@ -4,7 +4,7 @@
 // (recorded on `context.metadata`) and legacy/experimentalDecorators (recorded per prototype).
 import { isFunction, isObject, isString } from '@sindresorhus/is'
 import type { EnumClass } from '@real-enums/core'
-import type { State } from './state.js'
+import type { ChildrenOf, State } from './state.js'
 import {
   createInterpreter,
   manualClock,
@@ -24,8 +24,16 @@ import {
 // both read `Symbol.metadata` (esbuild falls back to this same registered symbol).
 ;(Symbol as { metadata?: symbol }).metadata ??= Symbol.for('Symbol.metadata')
 
-/** A guard: the name of a getter on the machine, or a combination of them. */
-export type GuardRef = string | { and: GuardRef[] } | { or: GuardRef[] } | { not: GuardRef }
+/**
+ * A guard: a getter on the machine, read through the machine (`(m: Fetch) => m.hasRetriesLeft`)
+ * or named (`'hasRetriesLeft'`), or a combination of them.
+ */
+export type GuardRef =
+  | string
+  | ((machine: never) => unknown)
+  | { and: GuardRef[] }
+  | { or: GuardRef[] }
+  | { not: GuardRef }
 
 export const and = (...guards: GuardRef[]): GuardRef => ({ and: guards })
 export const or = (...guards: GuardRef[]): GuardRef => ({ or: guards })
@@ -82,6 +90,7 @@ type Decoration =
 
 const DECORATIONS = Symbol('switchyard.decorations')
 const BODY = Symbol('switchyard.body')
+const EVENT = Symbol('switchyard.event')
 const legacy = new WeakMap<object, Decoration[]>()
 
 function own(holder: Record<PropertyKey, unknown>): Decoration[] {
@@ -135,7 +144,7 @@ function methodDecorator(
       function (this: Machine, ...args: unknown[]) {
         this.send(event, ...args)
       },
-      { [BODY]: body },
+      { [BODY]: body, [EVENT]: event },
     )
     return standard ? sender : { ...descriptor, value: sender }
   }) as MethodDecorator
@@ -225,6 +234,10 @@ const dev =
   (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.[
     'NODE_ENV'
   ] !== 'production'
+// `(m: Fetch) => m.hasRetriesLeft` is labelled `hasRetriesLeft`, as the string guard would be.
+const guardLabel = (fn: (...args: never[]) => unknown) =>
+  /=>\s*\w+\.(\w+)\s*$/.exec(String(fn))?.[1] ?? fn.name
+
 const describe = (s: State) => `${s.constructor.name}.${s.value}`
 
 interface Compiled {
@@ -311,6 +324,7 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
   const nodeAt = (path: string) => nodes.get(path)!
 
   const guardOf = (ref: GuardRef): ((e: EventObject) => boolean) => {
+    if (isFunction(ref)) return named(() => Boolean(self && ref(self as never)), guardLabel(ref))
     if (isString(ref)) {
       if (!(ref in ctor.prototype))
         throw new Error(`${name}: guard "${ref}" is not a getter on the class`)
@@ -447,6 +461,29 @@ function rootEnum(ctor: typeof Machine, decorations: Decoration[]): EnumClass<St
  * A statechart, written as a class: `class Fetch extends Machine<FetchState>`. Decorated
  * methods are its events; `@tracked` (or plain) fields are its context. It starts on first use.
  */
+/**
+ * Every state a `Machine<S>` has: the root enum (or each region's), and their children's at any
+ * depth. Any state when `S` is unknown.
+ */
+export type StatesOf<S> = unknown extends S
+  ? State
+  : S extends State
+    ? S | StatesOf<ChildrenOf<S>>
+    : S extends object
+      ? StatesOf<S[keyof S]>
+      : never
+
+/** `m.can(State, { via })` and `m.can.event`; see {@link Machine.can}. */
+export type Can<S = unknown> = CanEnter<S> & { readonly [event: string]: boolean }
+
+/**
+ * `m.can(FetchState.Loading, { via })`: whether an event would enter the state now.
+ * Taken from a method so the parameter stays bivariant: a Machine<FetchState> is a Machine<unknown>.
+ */
+export type CanEnter<S> = {
+  can(state: StatesOf<S>, options?: { via?: (...args: never[]) => unknown }): boolean
+}['can']
+
 export interface Configuration {
   /** Lets a framework track machine reads (state, matches, can, status) and re-render on change. */
   reactivity?: { consume(machine: object): void; dirty(machine: object): void } | undefined
@@ -731,23 +768,35 @@ export abstract class Machine<S = State> {
     return this.#interpreter?.status ?? 'idle'
   }
 
-  matches(state: State): boolean {
+  matches(state: StatesOf<S>): boolean {
     const i = this.#i
     configured.reactivity?.consume(this)
     return (this.#compiled!.paths.get(state) ?? []).some(p => i.matches(p))
   }
 
-  /** `m.can.fetch`: whether calling `fetch()` now would take a transition. */
-  get can(): Record<string, boolean> {
+  /**
+   * `m.can(FetchState.Loading)`: whether some event would now take the machine into the state;
+   * `{ via: m.retry }` asks about that event alone. `m.can.fetch`: whether calling `fetch()` now
+   * would take a transition.
+   */
+  get can(): Can<S> {
     const i = this.#i
-    const events = this.#compiled!.events
+    const { events, paths } = this.#compiled!
+    const { name } = this.constructor
     configured.reactivity?.consume(this)
-    return new Proxy(
-      {},
-      {
-        get: (_t, key) => isString(key) && i.can({ type: events.get(key) ?? key, args: [] }),
-      },
-    )
+    const reach: CanEnter<S> = (state, options = {}) => {
+      // Only a State type-checks as StatesOf<S>; TypeScript can't see that through a generic S.
+      const targets = paths.get(state as State)
+      if (!targets) throw new Error(`${name}: ${describe(state)} is not one of its states`)
+      const { via } = options
+      const viaEvent = via && (via as { [EVENT]?: string })[EVENT]
+      if (via && !viaEvent) throw new Error(`${name}: ${via.name} is not an event method`)
+      const types = viaEvent ? [viaEvent] : new Set(events.values())
+      return [...types].some(type => targets.some(to => i.can({ type, args: [] }, to)))
+    }
+    return new Proxy(reach, {
+      get: (_t, key) => isString(key) && i.can({ type: events.get(key) ?? key, args: [] }),
+    }) as Can<S>
   }
 
   send(event: string, ...args: unknown[]): void {
@@ -768,7 +817,8 @@ export abstract class Machine<S = State> {
 
   /** Starts `child` as an actor of this machine, stopped when this one stops. */
   spawn<M extends Machine<unknown>>(child: M, options: { id: string; systemId?: string }): M {
-    Machine[INTERNAL].adopt(this, child, options.systemId)
+    // StatesOf<S> is a conditional type, which TypeScript measures as invariant in S.
+    Machine[INTERNAL].adopt(this as Machine<unknown>, child, options.systemId)
     this.#spawned.set(options.id, child)
     child.start()
     // No transition happened, but `actors` changed: tell whoever is watching.

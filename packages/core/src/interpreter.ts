@@ -126,8 +126,8 @@ export interface Interpreter {
   /** Active state paths in document order. */
   readonly configuration: string[]
   matches(path: string): boolean
-  /** Whether `event` would take a transition now, guards included. */
-  can(event: EventObject): boolean
+  /** Whether `event` would take a transition now, guards included; with `to`, one entering it. */
+  can(event: EventObject, to?: string): boolean
   start(): this
   send(event: EventObject): this
   stop(): this
@@ -261,8 +261,13 @@ export function createInterpreter(
     matches(path) {
       return [...configuration].some(n => n.id === path)
     },
-    can(e) {
-      return status === 'active' && selectTransitions(e, true).length > 0
+    can(e, to) {
+      return (
+        status === 'active' &&
+        selectTransitions(e, true).some(
+          t => !to || t.targets.some(n => n.id === to || n.id.startsWith(`${to}.`)),
+        )
+      )
     },
     start() {
       if (status !== 'idle') return this

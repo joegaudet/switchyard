@@ -417,7 +417,8 @@
             your app, <code>&lt;SwitchyardDebug&gt;</code> draws it live.
           </figcaption>
         </figure>
-        <pre><code class="language-typescript">class FetchState extends State {
+        <pre><code class="language-typescript">class FetchState extends State&lt;Attempt&gt; {
+  private declare readonly brand: never
   static Idle = FetchState.of('idle')
   static Loading = FetchState.of('loading', { children: Attempt, history: 'shallow' })
   static Done = FetchState.of('done')
@@ -435,7 +436,7 @@ class Fetch extends Machine&lt;FetchState&gt; {
   @transition({ from: FetchState.Idle, to: FetchState.Loading })
   fetch() {}
 
-  @transition({ from: FetchState.Failed, to: history(FetchState.Loading), guard: 'hasRetriesLeft' })
+  @transition({ from: FetchState.Failed, to: history(FetchState.Loading), guard: (m: Fetch) =&gt; m.hasRetriesLeft })
   retry() {
     this.retries++
   }
@@ -459,8 +460,9 @@ class Fetch extends Machine&lt;FetchState&gt; {
           <article>
             <h3>Events are methods</h3>
             <p>
-              <code>fetch.retry()</code> sends the event, typed by its signature. Guards are getters
-              over your tracked fields. <code>can</code> knows what is allowed now.
+              <code>fetch.retry()</code> sends the event, typed by its signature. Guards point at
+              getters over your tracked fields, typed. <code>can(FetchState.Loading)</code> knows
+              what is allowed now.
             </p>
           </article>
           <article>
@@ -483,7 +485,7 @@ export default class UserCard extends Component {
 
   &lt;template&gt;
     {{#if this.fetch.state.isLoading}}Loading…{{/if}}
-    &lt;button disabled={{if (can this.fetch "retry") false true}}
+    &lt;button disabled={{if (can this.fetch FetchState.Loading via=this.fetch.retry) false true}}
             {{on "click" (send this.fetch "retry")}}&gt;Retry&lt;/button&gt;
   &lt;/template&gt;
 }</code></pre>

@@ -1,6 +1,7 @@
 import { Machine, State, transition } from '@switchyard-ts/core'
 
 export class FetchState extends State {
+  declare private readonly brand: never
   static Idle = FetchState.of('idle')
   static Loading = FetchState.of('loading')
   static Done = FetchState.of('done')

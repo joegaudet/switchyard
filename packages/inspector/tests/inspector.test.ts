@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { connectInspector, toXStateValue } from '../src/index.js'
 
 class Step extends State {
+  declare private readonly brand: never
   static Sending = Step.of('sending')
   static Sent = Step.of('sent', { final: true })
 }
@@ -14,6 +15,7 @@ class FileUpload extends Machine<Step> {
 }
 
 class Queue extends State {
+  declare private readonly brand: never
   static Idle = Queue.of('idle')
   static Working = Queue.of('working')
 }
@@ -28,6 +30,7 @@ class Uploader extends Machine<Queue> {
 }
 
 class Toggle extends State {
+  declare private readonly brand: never
   static Off = Toggle.of('off')
   static On = Toggle.of('on')
 }

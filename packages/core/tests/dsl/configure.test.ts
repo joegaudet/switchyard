@@ -79,6 +79,7 @@ describe('reserved names', () => {
   it('a decorated method may not shadow the Machine API', async () => {
     const { Machine, State, after, transition } = await import('../../src/index.js')
     class S extends State {
+      declare private readonly brand: never
       static A = S.of('a')
       static B = S.of('b')
     }
@@ -104,10 +105,12 @@ describe('parallel machines', () => {
   it('a transition with no `from` stays inside its target region', async () => {
     const { Machine, State, region, transition } = await import('../../src/index.js')
     class Toggle extends State {
+      declare private readonly brand: never
       static Off = Toggle.of('off')
       static On = Toggle.of('on')
     }
     class Align extends State {
+      declare private readonly brand: never
       static Left = Align.of('left')
       static Right = Align.of('right')
     }
@@ -132,6 +135,7 @@ describe('event names', () => {
   it('`event` names the event when the method name cannot be it', async () => {
     const { Machine, State, transition } = await import('../../src/index.js')
     class P extends State {
+      declare private readonly brand: never
       static Playing = P.of('playing')
       static Stopped = P.of('stopped')
     }
@@ -155,6 +159,7 @@ describe('event names', () => {
   it('`can` answers for the method, as well as for the event it sends', async () => {
     const { Machine, State, transition } = await import('../../src/index.js')
     class P extends State {
+      declare private readonly brand: never
       static Playing = P.of('playing')
       static Stopped = P.of('stopped')
     }

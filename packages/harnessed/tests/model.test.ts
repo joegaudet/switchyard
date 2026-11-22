@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest'
 import { modelTests } from '../src/index.js'
 
 class FetchState extends State {
+  declare private readonly brand: never
   static Idle = FetchState.of('idle')
   static Loading = FetchState.of('loading')
   static Done = FetchState.of('done')
