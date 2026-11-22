@@ -2,6 +2,7 @@ import { tracked } from '@glimmer/tracking'
 import { after, invoke, Machine, State, transition } from '@switchyard-ts/core'
 
 export class Session extends State {
+  declare private readonly brand: never
   static LoggedOut = Session.of('loggedOut')
   static LoggingIn = Session.of('loggingIn')
   static LoggedIn = Session.of('loggedIn')

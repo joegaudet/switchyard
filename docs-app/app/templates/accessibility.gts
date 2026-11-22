@@ -24,7 +24,7 @@ import AuthDemo from 'docs-app/components/demos/auth-demo'
   </p>
   <h2>Disable what the machine would refuse</h2>
   <p>
-    <code>can</code> knows which events the current state accepts, guards included. Disabling a
+    <code>can</code> knows which states the machine can enter from the current one, guards included. Disabling a
     control with it tells everyone, not just sighted users, that the action is unavailable; pair
     it with text that says why.
   </p>

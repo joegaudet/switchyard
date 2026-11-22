@@ -8,6 +8,7 @@ import { perform } from '@switchyard-ts/ember-concurrency'
 import '@switchyard-ts/ember'
 
 class SearchState extends State {
+  private declare readonly brand: never
   static Idle = SearchState.of('idle')
   static Loading = SearchState.of('loading')
   static Done = SearchState.of('done')

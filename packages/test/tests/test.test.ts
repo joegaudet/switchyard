@@ -11,11 +11,13 @@ import {
 } from '../src/index.js'
 
 class Attempt extends State {
+  declare private readonly brand: never
   static First = Attempt.of('first')
   static Retrying = Attempt.of('retrying')
 }
 
-class FetchState extends State {
+class FetchState extends State<Attempt> {
+  declare private readonly brand: never
   static Idle = FetchState.of('idle')
   static Loading = FetchState.of('loading', { children: Attempt, history: 'shallow' })
   static Failed = FetchState.of('failed')

@@ -11,11 +11,13 @@ import {
 } from '../../src/index.js'
 
 class Toggle extends State {
+  declare private readonly brand: never
   static Off = Toggle.of('off')
   static On = Toggle.of('on')
 }
 
-class Doc extends State {
+class Doc extends State<Toggle> {
+  declare private readonly brand: never
   static Viewing = Doc.of('viewing')
   static Editing = Doc.of('editing', { regions: { bold: Toggle, italic: Toggle } })
   static Saved = Doc.of('saved', { final: true })
@@ -82,6 +84,7 @@ describe('waitFor and toPromise', () => {
 describe('dynamic delays', () => {
   it('@after takes a getter name, read when the state is entered', () => {
     class Light extends State {
+      declare private readonly brand: never
       static Green = Light.of('green')
       static Red = Light.of('red')
     }
@@ -108,6 +111,7 @@ describe('dynamic delays', () => {
 
   it('a machine with a named delay restores and validates its snapshots', () => {
     class Light extends State {
+      declare private readonly brand: never
       static Green = Light.of('green')
       static Red = Light.of('red')
     }

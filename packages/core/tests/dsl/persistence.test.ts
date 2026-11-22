@@ -7,6 +7,7 @@ class Saved extends Fetch {
 }
 
 class Order extends State {
+  declare private readonly brand: never
   static Pending = Order.of('pending')
   static Shipped = Order.of('shipped')
   static Delivered = Order.of('delivered')

@@ -179,10 +179,46 @@ const exhaustiveStateSwitch: Rule.RuleModule = {
   },
 }
 
+const BRAND = 'private declare readonly brand: never'
+
+const stateBrand: Rule.RuleModule = {
+  meta: {
+    type: 'problem',
+    docs: { description: 'Require each State enum to declare its brand, so its type is its own' },
+    fixable: 'code',
+    schema: [],
+  },
+  create(context) {
+    return {
+      ClassDeclaration(cls) {
+        const c = node(cls)
+        if (superName(c) !== 'State') return
+        const body = node(c['body'])
+        const members = body['body'] as N[]
+        const branded = members.some(
+          m => name(m['key']) === 'brand' && m['accessibility'] === 'private',
+        )
+        if (branded) return
+        context.report({
+          node: cls,
+          message: `${name(c['id'])} needs \`${BRAND}\`, so TypeScript tells its states from other enums.`,
+          fix: fixer => {
+            const [open] = body['range'] as [number, number]
+            const first = members[0] as { loc?: { start: { column: number } } } | undefined
+            const indent = ' '.repeat(first?.loc?.start.column ?? 2)
+            return fixer.insertTextAfterRange([open, open + 1], `\n${indent}${BRAND}`)
+          },
+        })
+      },
+    }
+  },
+}
+
 const rules = {
   'no-unreachable-state': noUnreachableState,
   'no-unknown-guard': noUnknownGuard,
   'exhaustive-state-switch': exhaustiveStateSwitch,
+  'state-brand': stateBrand,
 }
 
 const plugin = {
@@ -198,6 +234,7 @@ plugin.configs['recommended'] = {
     'switchyard/no-unreachable-state': 'error',
     'switchyard/no-unknown-guard': 'error',
     'switchyard/exhaustive-state-switch': 'warn',
+    'switchyard/state-brand': 'error',
   },
 }
 

@@ -2,6 +2,7 @@ import { tracked } from '@glimmer/tracking'
 import { after, always, Machine, State, transition } from '@switchyard-ts/core'
 
 export class Upload extends State {
+  declare private readonly brand: never
   static Sending = Upload.of('sending')
   static Sent = Upload.of('sent', { final: true })
   static Cancelled = Upload.of('cancelled', { final: true })
@@ -33,6 +34,7 @@ export class FileUpload extends Machine<Upload> {
 }
 
 export class Queue extends State {
+  declare private readonly brand: never
   static Idle = Queue.of('idle')
   static Busy = Queue.of('busy')
 }
@@ -56,6 +58,6 @@ export class Uploader extends Machine<Queue> {
     this.completed++
   }
 
-  @always({ from: Queue.Busy, to: Queue.Idle, guard: 'allDone' })
+  @always({ from: Queue.Busy, to: Queue.Idle, guard: (m: Uploader) => m.allDone })
   settle() {}
 }

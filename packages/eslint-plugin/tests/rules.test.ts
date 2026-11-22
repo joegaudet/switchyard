@@ -92,3 +92,31 @@ tester.run('exhaustive-state-switch', plugin.rules['exhaustive-state-switch'], {
     },
   ],
 })
+
+tester.run('state-brand', plugin.rules['state-brand'], {
+  valid: [
+    `class Pane extends State {
+      private declare readonly brand: never
+      static Shown = Pane.of('shown')
+    }`,
+    // Not a state enum.
+    `class Color extends Enum { static Red = Color.of('red') }`,
+  ],
+  invalid: [
+    {
+      code: `class Pane extends State {
+  static Shown = Pane.of('shown')
+}`,
+      output: `class Pane extends State {
+  private declare readonly brand: never
+  static Shown = Pane.of('shown')
+}`,
+      errors: [
+        {
+          message:
+            'Pane needs `private declare readonly brand: never`, so TypeScript tells its states from other enums.',
+        },
+      ],
+    },
+  ],
+})

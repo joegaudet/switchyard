@@ -7,6 +7,7 @@
   </p>
   <h2>Switchyard</h2>
   <pre><code class="language-typescript">class Button extends State &lbrace;
+  private declare readonly brand: never
   static Idle = Button.of('idle')
   static Busy = Button.of('busy')
   static Success = Button.of('success')

@@ -38,11 +38,13 @@ function ours(send: (type: string) => void, configuration: () => string[], event
 // --- a decorated machine with hierarchy, deep history, a guard, eventless and final states ---
 
 class Section extends State {
+  declare private readonly brand: never
   static Name = Section.of('name')
   static Email = Section.of('email')
 }
 
-class Step extends State {
+class Step extends State<Section> {
+  declare private readonly brand: never
   static Start = Step.of('start')
   static Form = Step.of('form', { children: Section, history: 'deep' })
   static Review = Step.of('review')
@@ -161,12 +163,14 @@ describe('toClassSource', () => {
       import { Machine, State, always, history, transition } from '@switchyard-ts/core'
 
       export class PlayerPlaying extends State {
+        private declare readonly brand: never
         static Normal = PlayerPlaying.of('normal')
         static Fast = PlayerPlaying.of('fast')
         static Seeking = PlayerPlaying.of('seeking')
       }
 
-      export class PlayerState extends State {
+      export class PlayerState extends State<PlayerPlaying> {
+        private declare readonly brand: never
         static Stopped = PlayerState.of('stopped')
         static Playing = PlayerState.of('playing', { children: PlayerPlaying, history: 'shallow' })
         static Paused = PlayerState.of('paused')

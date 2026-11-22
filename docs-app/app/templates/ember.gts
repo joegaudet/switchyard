@@ -12,7 +12,7 @@ export default class UserCard extends Component &lbrace;
   &lt;template&gt;
     \{{#if this.fetch.state.isLoading}}Loading…\{{/if}}
     \{{#if (matches this.fetch FetchState.Done)}}\{{this.fetch.user}}\{{/if}}
-    &lt;button disabled=\{{if (can this.fetch "retry") false true}} \{{on "click" (send this.fetch "retry")}}&gt;Retry&lt;/button&gt;
+    &lt;button disabled=\{{if (can this.fetch FetchState.Loading via=this.fetch.retry) false true}} \{{on "click" (send this.fetch "retry")}}&gt;Retry&lt;/button&gt;
   &lt;/template&gt;
 &rbrace;</code></pre>
   <ul>

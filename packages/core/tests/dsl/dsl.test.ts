@@ -124,6 +124,42 @@ describe.each([
         expect(m.can.giveUp).toBe(true)
       })
 
+      it('can(State) says whether some event would now take the machine into the state', () => {
+        const m = new Fetch()
+        expect(m.can(FetchState.Loading)).toBe(true)
+        expect(m.can(FetchState.Done)).toBe(false)
+        m.fetch()
+        expect(m.can(Attempt.Retrying)).toBe(true)
+        m.reject()
+        // retry, through history(FetchState.Loading); then its guard fails
+        expect(m.can(FetchState.Loading)).toBe(true)
+        m.retries = 2
+        expect(m.can(FetchState.Loading)).toBe(false)
+      })
+
+      it('can(State, { via }) asks about one event method', () => {
+        const m = new Fetch()
+        m.fetch()
+        m.reject()
+        expect(m.can(FetchState.Idle)).toBe(true)
+        expect(m.can(FetchState.Idle, { via: m.giveUp })).toBe(false)
+        m.retries = 2
+        expect(m.can(FetchState.Idle, { via: m.giveUp })).toBe(true)
+      })
+
+      it('a transition with no target reaches no state', () => {
+        const m = new Counter()
+        expect(m.can.inc).toBe(true)
+        expect(m.can(Level.Low)).toBe(false)
+      })
+
+      it('can(State) rejects a state of another machine, and a via that is not an event', () => {
+        const m = new Fetch()
+        // @ts-expect-error a state of another machine is a type error too; this is the runtime check
+        expect(() => m.can(Level.Low)).toThrow(/not one of its states/)
+        expect(() => m.can(FetchState.Idle, { via: m.enterLoading })).toThrow(/not an event/)
+      })
+
       it('send(name, ...args) is the escape hatch', () => {
         const m = new Fetch()
         m.send('fetch')

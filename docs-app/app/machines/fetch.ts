@@ -3,11 +3,13 @@ import { is } from '@real-enums/core'
 import { after, history, invoke, Machine, State, transition } from '@switchyard-ts/core'
 
 export class Attempt extends State {
+  declare private readonly brand: never
   static First = Attempt.of('first')
   static Retrying = Attempt.of('retrying')
 }
 
-export class FetchState extends State {
+export class FetchState extends State<Attempt> {
+  declare private readonly brand: never
   static Idle = FetchState.of('idle')
   static Loading = FetchState.of('loading', { children: Attempt, history: 'shallow' })
   static Done = FetchState.of('done')
@@ -44,7 +46,11 @@ export class Fetch extends Machine<FetchState> {
   @transition({ from: FetchState.Idle, to: FetchState.Loading })
   fetch() {}
 
-  @transition({ from: FetchState.Failed, to: history(FetchState.Loading), guard: 'hasRetriesLeft' })
+  @transition({
+    from: FetchState.Failed,
+    to: history(FetchState.Loading),
+    guard: (m: Fetch) => m.hasRetriesLeft,
+  })
   retry() {
     this.retries++
   }

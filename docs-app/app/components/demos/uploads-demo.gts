@@ -1,8 +1,8 @@
 import Component from '@glimmer/component'
 import { on } from '@ember/modifier'
-import { machine, send } from '@switchyard-ts/ember'
+import { can, machine, send } from '@switchyard-ts/ember'
 import { Example } from 'docs-app/components/example'
-import { Uploader } from 'docs-app/machines/uploads'
+import { Upload, Uploader } from 'docs-app/machines/uploads'
 import source from 'docs-app/machines/uploads.ts?raw'
 
 let n = 0
@@ -22,7 +22,7 @@ export default class UploadsDemo extends Component {
           <li>
             {{file.file}} <progress value={{file.progress}} max="100"></progress>
             <span class="state">{{file.state.label}}</span>
-            {{#if file.can.cancel}}
+            {{#if (can file Upload.Cancelled)}}
               <button type="button" class="secondary outline" {{on "click" (send file "cancel")}}>Cancel</button>
             {{/if}}
           </li>

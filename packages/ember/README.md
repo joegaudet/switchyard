@@ -14,7 +14,7 @@ Switchyard statecharts in Ember. Importing the package wires in four things:
 import Component from '@glimmer/component'
 import { on } from '@ember/modifier'
 import { machine, send, can } from '@switchyard-ts/ember'
-import { Fetch } from './fetch'
+import { Fetch, FetchState } from './fetch'
 
 export default class UserCard extends Component {
   fetch = machine(this, new Fetch())
@@ -22,7 +22,7 @@ export default class UserCard extends Component {
   <template>
     {{#if this.fetch.state.isLoading}}Loading…{{/if}}
     <button
-      disabled={{if (can this.fetch 'retry') false true}}
+      disabled={{if (can this.fetch FetchState.Loading via=this.fetch.retry) false true}}
       {{on 'click' (send this.fetch 'retry')}}
     >Retry</button>
   </template>

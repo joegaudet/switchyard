@@ -1,11 +1,13 @@
 import { Machine, region, State, transition } from '@switchyard-ts/core'
 
 export class Toggle extends State {
+  declare private readonly brand: never
   static Off = Toggle.of('off')
   static On = Toggle.of('on')
 }
 
 export class Align extends State {
+  declare private readonly brand: never
   static Left = Align.of('left')
   static Center = Align.of('center')
   static Right = Align.of('right')

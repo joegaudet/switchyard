@@ -2,11 +2,13 @@ import { tracked } from '@glimmer/tracking'
 import { history, Machine, State, transition } from '@switchyard-ts/core'
 
 export class Details extends State {
+  declare private readonly brand: never
   static Name = Details.of('name')
   static Email = Details.of('email')
 }
 
-export class Step extends State {
+export class Step extends State<Details> {
+  declare private readonly brand: never
   static Details = Step.of('details', { children: Details, history: 'deep' })
   static Review = Step.of('review')
   static Submitted = Step.of('submitted', { final: true })
@@ -28,13 +30,13 @@ export class SignupWizard extends Machine<Step> {
     return /.+@.+/.test(this.signup.email)
   }
 
-  @transition({ from: Details.Name, to: Details.Email, guard: 'hasName' })
+  @transition({ from: Details.Name, to: Details.Email, guard: (m: SignupWizard) => m.hasName })
   next() {}
 
   @transition({ from: Details.Email, to: Details.Name })
   previous() {}
 
-  @transition({ from: Details.Email, to: Step.Review, guard: 'hasEmail' })
+  @transition({ from: Details.Email, to: Step.Review, guard: (m: SignupWizard) => m.hasEmail })
   review() {}
 
   @transition({ from: Step.Review, to: history(Step.Details) })
