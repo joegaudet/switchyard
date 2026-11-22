@@ -221,6 +221,10 @@ const rules = {
   'state-brand': stateBrand,
 }
 
+/**
+ * The plugin: `no-unreachable-state`, `no-unknown-guard` and `exhaustive-state-switch`, and a
+ * `recommended` flat config that turns them on.
+ */
 const plugin = {
   meta: { name: '@switchyard-ts/eslint-plugin' },
   rules,

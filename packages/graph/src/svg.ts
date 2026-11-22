@@ -15,10 +15,17 @@ const start = (id: string) => `start:${id}`
 const esc = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
+/** Options for {@link toSvg}. */
 export interface SvgOptions {
+  /** Which way transitions flow: left to right (the default) or top to bottom. */
   direction?: 'RIGHT' | 'DOWN'
 }
 
+/**
+ * The graph as a standalone SVG document, laid out by ELK with compound states as nested boxes.
+ * Each state is a `<g data-state="path">` and each transition a `<g data-source data-target>`,
+ * which the live viewer highlights.
+ */
 export async function toSvg(
   graph: Graph,
   { direction = 'RIGHT' }: SvgOptions = {},

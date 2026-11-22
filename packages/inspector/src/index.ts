@@ -12,14 +12,19 @@ export interface ActorRefLike {
   id: string
   _parent?: ActorRefLike
   logic: { config: unknown }
+  /** Sends an event the inspector fires at the machine, by its type. */
   send(event: { type: string }): void
+  /** The machine's current snapshot, as the inspector shows it. */
   getSnapshot(): unknown
 }
 
 /** The inspector calls this needs: `createBrowserInspector()` from @statelyai/inspect fits. */
 export interface InspectorLike {
+  /** Registers an actor and its starting snapshot. */
   actor(actor: ActorRefLike, snapshot?: { value?: unknown; status?: string }): void
+  /** Records an event the actor received. */
   event(sessionId: string, event: { type: string }, info?: { source?: string }): void
+  /** Records the actor's new snapshot after an event. */
   snapshot(
     sessionId: string,
     snapshot: { value?: unknown; status?: string },

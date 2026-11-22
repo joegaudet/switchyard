@@ -25,14 +25,18 @@ export interface XStateNode {
   exit?: XStateAction | XStateAction[]
   invoke?: XStateInvoke | XStateInvoke[]
 }
+/** An xstate action: its name, or `{ type: name }`. */
 export type XStateAction = string | { type: string }
+/** One xstate transition, its target absolute (`#Id.path`) when Switchyard writes it. */
 export interface XStateTransition {
   target?: string | string[]
   guard?: string | { type: string }
   actions?: XStateAction | XStateAction[]
   reenter?: boolean
 }
+/** A target, one transition, or a list tried in order: each form xstate accepts for `on`, `always` and `after`. */
 export type XStateTransitions = string | XStateTransition | (string | XStateTransition)[]
+/** An xstate invoke: the actor by its `src` name, with its done and error transitions. */
 export interface XStateInvoke {
   id?: string
   src: string
@@ -107,6 +111,7 @@ export function toXState(input: MachineClass | MachineConfig, machineId?: string
   return { id, ...node(cfg, '') }
 }
 
+/** The guards, actions and actors {@link fromXState} puts in place of the names in the JSON. */
 export interface Implementations {
   guards?: Record<string, Guard>
   actions?: Record<string, Action>

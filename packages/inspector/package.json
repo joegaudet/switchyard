@@ -1,6 +1,6 @@
 {
   "name": "@switchyard-ts/inspector",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Stream Switchyard machines to the Stately Inspector.",
   "keywords": [
     "statechart",

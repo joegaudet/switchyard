@@ -11,6 +11,7 @@ const follow = modifier((element: SwitchyardDiagram, [machine]: [Machine<unknown
   element.machine = machine
 })
 
+/** `<SwitchyardDebug @machine={{this.fetch}} />`: the machine's live statechart, for development. */
 export const SwitchyardDebug: TOC<{
   Element: HTMLElement
   Args: { machine: Machine<unknown> }
