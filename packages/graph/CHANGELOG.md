@@ -1,5 +1,13 @@
 # @switchyard-ts/graph
 
+## 0.3.0
+
+### Patch Changes
+
+- 8df225f: Doc comments on every export that lacked one, which now show in editors and in the API reference at https://joegaudet.com/switchyard/api/.
+- Updated dependencies [8c4f52d]
+  - @switchyard-ts/core@0.3.0
+
 ## 0.2.0
 
 ### Patch Changes
