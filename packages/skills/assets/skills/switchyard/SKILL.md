@@ -94,7 +94,8 @@ class Fetch extends Machine<FetchState> {
 `m.state` (the root value), `m.matches(State.X)` (any depth), `m.can(State.X)` (some event
 would enter it now; `{ via: m.retry }` for one event), `m.can.retry`, `m.status`,
 `m.snapshot()` / `m.restore(snapshot)`, `m.subscribe(fn)`, `m.actors`, `m.spawn(child, { id })`,
-`m.sendTo(id, event)`, `this.sendParent(event)`, `this.emit(type, payload)` / `m.on(type, fn)`,
+`m.sendTo(id, event)`, `this.sendParent(event)`, `this.emit(this.progress, payload)` / `m.on(m.progress, fn)` (the method names the
+emitted event; a string also works),
 `await waitFor(m, pred, { timeout })`, `await toPromise(m)`.
 
 ## Ember

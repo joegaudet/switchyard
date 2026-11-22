@@ -256,7 +256,7 @@ export class Uploader extends Machine<Queue> {
   @transition({ from: Queue.Working })
   progressed(name: string) {
     this.log.push(name)
-    this.emit('progress', { name })
+    this.emit(this.progressed, { name })
   }
 
   @invoke(Queue.Working, { id: 'main', onDone: Queue.Empty })

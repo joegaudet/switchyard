@@ -20,6 +20,7 @@ export {
   type Configuration,
   type Can,
   type CanEnter,
+  type EmittedBy,
   type StatesOf,
   type GuardRef,
   type InvokeOptions,
