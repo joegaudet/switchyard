@@ -27,3 +27,16 @@ export class State extends Enum {
     this.final = options.final ?? false
   }
 }
+
+export {
+  createInterpreter,
+  type Action,
+  type ActionApi,
+  type EventObject,
+  type Guard,
+  type Interpreter,
+  type MachineConfig,
+  type StateConfig,
+  type Status,
+  type TransitionConfig,
+} from './interpreter.js'
