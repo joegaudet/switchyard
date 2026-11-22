@@ -8,7 +8,9 @@ const CHAR = 7
 const LABEL_CHAR = 6
 const TITLE = 26
 
-const nid = (id: string) => (id ? `s:${id}` : 'root')
+// A transition from the root is handled in every state; ELK cannot draw an edge out of the root
+// itself, so those come from an "any state" node.
+const nid = (id: string) => (id ? `s:${id}` : 'any')
 const start = (id: string) => `start:${id}`
 const esc = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -51,6 +53,8 @@ export async function toSvg(
 
   const rootChildren = graph.root.children.map(node)
   if (graph.root.initial) rootChildren.unshift({ id: start(''), width: 10, height: 10 })
+  const anyState = graph.transitions.some(t => !t.source)
+  if (anyState) rootChildren.push({ id: 'any', width: 72, height: 22 })
   const input: ElkNode = {
     id: 'root',
     layoutOptions: {
@@ -109,6 +113,12 @@ export async function toSvg(
       `${g}<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8"${dash}/>${final}${title}</g>`,
     )
   }
+  if (anyState) {
+    const b = boxes.get('any')!
+    out.push(
+      `<g class="sy-any"><text x="${(b.x ?? 0) + 36}" y="${(b.y ?? 0) + 15}" text-anchor="middle">any state</text></g>`,
+    )
+  }
   for (const s of states(graph)) {
     if (!s.initial) continue
     const b = boxes.get(start(s.id))!
@@ -159,6 +169,7 @@ const STYLE = [
   '.sy-transition path{fill:none;stroke:#64748b;stroke-width:1.25}',
   '#sy-arrow path{fill:#64748b}',
   '.sy-label{fill:#475569;font-size:11px}',
+  '.sy-any text{fill:#64748b;font-style:italic}',
   '.sy-taken path{stroke:#4f46e5;stroke-width:2.5}',
   '@media (prefers-color-scheme:dark){.sy-diagram{color:#e2e8f0}.sy-state rect,.sy-state circle{fill:#0f172a;stroke:#94a3b8}.sy-compound>rect,.sy-parallel>rect{fill:#111827}.sy-active>rect,.sy-active>circle{fill:#312e81;stroke:#818cf8}.sy-label{fill:#cbd5e1}.sy-initial{fill:#cbd5e1}}',
 ].join('')

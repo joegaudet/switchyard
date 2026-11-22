@@ -18,6 +18,7 @@ export {
   type Configuration,
   type GuardRef,
   type InvokeOptions,
+  type Messages,
   type MachineSnapshot,
   type StandardSchemaV1,
   type MethodDecorator,

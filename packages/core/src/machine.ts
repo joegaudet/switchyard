@@ -50,6 +50,11 @@ export interface TransitionOptions {
   reenter?: boolean
   /** The region, when a state's enum is used by more than one `@region`. */
   in?: string
+  /**
+   * The event's name, when it cannot be the method's: one of Machine's own (`stop`, `send`), or
+   * not an identifier (`media.ended`). Calling the method sends it.
+   */
+  event?: string
 }
 
 type Fn = (this: unknown, ...args: unknown[]) => unknown
@@ -109,7 +114,8 @@ export interface MethodDecorator {
 
 function methodDecorator(
   make: (key: string, body: Fn) => Decoration,
-  sends: boolean,
+  /** Replace the method with one that sends this event (`true`: the method's own name). */
+  sends: boolean | string,
 ): MethodDecorator {
   return ((target: unknown, context: unknown, descriptor?: PropertyDescriptor) => {
     const standard = isStandard(context)
@@ -123,9 +129,10 @@ function methodDecorator(
       make(key, body),
     )
     if (!sends) return standard ? undefined : descriptor
+    const event = sends === true ? key : sends
     const sender = Object.assign(
       function (this: Machine, ...args: unknown[]) {
-        this.send(key, ...args)
+        this.send(event, ...args)
       },
       { [BODY]: body },
     )
@@ -135,7 +142,10 @@ function methodDecorator(
 
 /** Makes the method an event: calling it sends the event, and its body runs as the action. */
 export const transition = (options: TransitionOptions = {}) =>
-  methodDecorator((key, body) => ({ kind: 'transition', key, options, body }), true)
+  methodDecorator(
+    (key, body) => ({ kind: 'transition', key, options, body }),
+    options.event ?? true,
+  )
 
 /** An eventless transition, taken as soon as its guard holds. The method runs as its action. */
 export const always = (options: TransitionOptions) =>
@@ -223,6 +233,14 @@ interface Compiled {
 
 function compile(ctor: typeof Machine, self: object | undefined): Compiled {
   const decorations = decorationsOf(ctor)
+  // A decorated `stop` or `send` would replace the machine's own: `machine(owner, m)` stops a
+  // machine by calling `stop()`, and every event goes through `send()`.
+  const reserved = Object.getOwnPropertyNames(Machine.prototype)
+  for (const d of decorations)
+    if (reserved.includes(d.key))
+      throw new Error(
+        `${ctor.name}: "${d.key}" is part of the Machine API; rename the decorated method`,
+      )
   const paths = new Map<State, string[]>()
   const nodes = new Map<string, StateConfig>()
 
@@ -309,21 +327,27 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
     }
   }
 
-  const sources = (options: TransitionOptions) =>
-    options.from ? [options.from].flat().map(s => nodeAt(pathOf(s, options.in))) : [config]
+  // No `from`: every state handles it. In a parallel machine that means every state of one
+  // region (`in`, or the target's); sourcing it on the root would exit and reset every region.
+  const sources = (options: TransitionOptions): StateConfig[] => {
+    if (options.from) return [options.from].flat().map(s => nodeAt(pathOf(s, options.in)))
+    if (!Array.isArray(root)) return [config]
+    const to = options.to instanceof HistoryTarget ? options.to.state : options.to
+    const region = options.in ?? (to ? pathOf(to, undefined).split('.')[0] : undefined)
+    return [region ? nodeAt(region) : config]
+  }
 
   for (const d of decorations) {
     if (d.kind === 'transition') {
       const action: Action = named(event => {
         const result = d.body.apply(self, (event['args'] as unknown[]) ?? [])
         if (dev && typeof (result as Promise<unknown>)?.then === 'function')
-          console.warn(
-            `${name}: event "${d.key}" returned a promise; run async work in @invoke or @onEntry`,
-          )
+          console.warn(message('asyncEvent')(name, d.key))
       }, d.key)
       for (const node of sources(d.options)) {
         const on = (node.on ??= {})
-        on[d.key] = [...[on[d.key] ?? []].flat(), transitionConfig(d.options, action)]
+        const event = d.options.event ?? d.key
+        on[event] = [...[on[event] ?? []].flat(), transitionConfig(d.options, action)]
       }
     } else if (d.kind === 'always') {
       for (const node of sources(d.options))
@@ -398,7 +422,28 @@ export interface Configuration {
   clock?: Clock | undefined
   /** Sees every `@invoke` promise; Ember wraps it in a test waiter. Returns the promise to await. */
   track?: (<T>(promise: Promise<T>) => Promise<T>) | undefined
+  /** Replaces the English text of development warnings and the `strict` error, per message. */
+  messages?: Partial<Messages> | undefined
 }
+
+/** The library's own messages. Each takes the machine class name first. */
+export interface Messages {
+  unhandled(machine: string, event: string, state: string): string
+  asyncEvent(machine: string, event: string): string
+  noActor(machine: string, id: string, event: string): string
+  noParent(machine: string, event: string): string
+}
+
+const english: Messages = {
+  unhandled: (machine, event, state) => `${machine}: no transition for "${event}" in ${state}`,
+  asyncEvent: (machine, event) =>
+    `${machine}: event "${event}" returned a promise; run async work in @invoke or @onEntry`,
+  noActor: (machine, id, event) => `${machine}: no actor "${id}" for "${event}"`,
+  noParent: (machine, event) => `${machine}: sendParent("${event}") with no parent`,
+}
+
+const message = <K extends keyof Messages>(key: K): Messages[K] =>
+  configured.messages?.[key] ?? english[key]
 
 const configured: Configuration = {}
 
@@ -568,9 +613,9 @@ export abstract class Machine<S = State> {
       this.#interpreter = createInterpreter(this.#compiled.config, {
         ...((ctor.clock ?? configured.clock) ? { clock: (ctor.clock ?? configured.clock)! } : {}),
         onUnhandled: event => {
-          const message = `${ctor.name}: no transition for "${event.type}" in ${this.#describeState()}`
-          if (ctor.strict) throw new Error(message)
-          if (dev) console.warn(message)
+          const text = message('unhandled')(ctor.name, event.type, this.#describeState())
+          if (ctor.strict) throw new Error(text)
+          if (dev) console.warn(text)
         },
       })
       this.#interpreter.subscribe(() => configured.reactivity?.dirty(this))
@@ -657,13 +702,13 @@ export abstract class Machine<S = State> {
     const spawned = this.#spawned.get(id)
     if (spawned) return spawned.send(event, ...args)
     if (!this.#i.sendTo(id, { type: event, args }) && dev)
-      console.warn(`${this.constructor.name}: no actor "${id}" for "${event}"`)
+      console.warn(message('noActor')(this.constructor.name, id, event))
   }
 
   /** Sends an event to the machine that spawned or invoked this one. */
   sendParent(event: string, ...args: unknown[]): void {
     if (this.#parent) this.#parent.send(event, ...args)
-    else if (dev) console.warn(`${this.constructor.name}: sendParent("${event}") with no parent`)
+    else if (dev) console.warn(message('noParent')(this.constructor.name, event))
   }
 
   /** Actors registered by systemId anywhere in this machine's tree. */

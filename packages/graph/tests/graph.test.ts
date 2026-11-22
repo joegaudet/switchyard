@@ -213,3 +213,21 @@ describe('actor topology', () => {
     `)
   })
 })
+
+describe('transitions handled in every state', () => {
+  const config = {
+    states: { a: { on: { go: { target: 'b' } } }, b: {} },
+    on: { reset: { target: 'a' } },
+  }
+
+  it('come from an "any state" marker in every format', async () => {
+    const g = toGraph(config, 'Resettable')
+    expect(toMermaid(g)).toContain('state "any state" as __any')
+    expect(toMermaid(g)).toContain('__any --> a : reset')
+    expect(toDot(g)).toContain('__any [shape=plaintext, label="any state"];')
+    expect(toDot(g)).toContain('__any -> a [label="reset"];')
+    const svg = await toSvg(g)
+    expect(svg).toContain('data-source="" data-target="a" data-event="reset"')
+    expect(svg).toContain('class="sy-any"')
+  })
+})

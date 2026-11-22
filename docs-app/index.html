@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Switchyard guide</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <meta
+      name="description"
+      content="The Switchyard guide: statecharts for Ember, written as classes, with a live example and live diagram on every page."
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.0.6/css/pico.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap"
+    />
+    <!-- The landing page's stylesheet: one family look, deployed next to guide/. -->
+    <link rel="stylesheet" href="../site.css" />
+
+    {{content-for "head"}} {{content-for "head-footer"}}
+  </head>
+  <body>
+    {{content-for "body"}}
+
+    <script src="/@embroider/virtual/vendor.js"></script>
+    <script type="module">
+      import Application from './app/app'
+      import environment from './app/config/environment'
+
+      Application.create(environment.APP)
+    </script>
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"
+      data-manual
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup-templating.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-handlebars.min.js"></script>
+
+    {{content-for "body-footer"}}
+  </body>
+</html>
