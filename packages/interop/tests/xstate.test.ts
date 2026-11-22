@@ -205,6 +205,41 @@ describe('toClassSource', () => {
     `)
   })
 
+  it('writes names from the config as data, never as code', async () => {
+    const pwn = `globalThis.__pwned = 1`
+    const hostile: XStateNode = {
+      id: 'hostile',
+      initial: `a'+(${pwn})+'`,
+      states: {
+        [`a'+(${pwn})+'`]: {
+          on: {
+            [`go'+(${pwn})+'`]: {
+              target: 'b',
+              guard: `x'+(${pwn})+'\n${pwn}`,
+              actions: [`act(){} static { ${pwn} } x`],
+            },
+          },
+          after: { [`1, {}); ${pwn}; (0`]: 'b' },
+        },
+        b: {
+          entry: [`e(){} static { ${pwn} } y`],
+          invoke: { src: `s(){} static { ${pwn} } z`, id: `i'+(${pwn})+'` },
+        },
+      },
+    }
+    const dir = join(dirname(fileURLToPath(import.meta.url)), '.generated')
+    mkdirSync(dir, { recursive: true })
+    const file = join(dir, 'hostile.ts')
+    writeFileSync(file, toClassSource(hostile))
+    const g = globalThis as { __pwned?: number }
+    delete g.__pwned
+    const { Hostile } = (await import(/* @vite-ignore */ file)) as {
+      Hostile: new () => Machine<unknown>
+    }
+    new Hostile()
+    expect(g.__pwned).toBeUndefined()
+  })
+
   it('generates a class that runs exactly as xstate does', async () => {
     const dir = join(dirname(fileURLToPath(import.meta.url)), '.generated')
     mkdirSync(dir, { recursive: true })

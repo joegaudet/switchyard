@@ -234,11 +234,14 @@ interface Compiled {
   root: EnumClass<State> | [string, EnumClass<State>][]
   /** Named `@after` delays: getters read when their state is entered. */
   delays: Record<string, () => number>
+  /** Each `@transition` method's event, where `event:` names it apart from the method. */
+  events: Map<string, string>
 }
 
 function compile(ctor: typeof Machine, self: object | undefined): Compiled {
   const decorations = decorationsOf(ctor)
   const delays: Record<string, () => number> = {}
+  const events = new Map<string, string>()
   // A decorated `stop` or `send` would replace the machine's own: `machine(owner, m)` stops a
   // machine by calling `stop()`, and every event goes through `send()`.
   const reserved = Object.getOwnPropertyNames(Machine.prototype)
@@ -363,6 +366,7 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
       for (const node of sources(d.options)) {
         const on = (node.on ??= {})
         const event = d.options.event ?? d.key
+        events.set(d.key, event)
         on[event] = [...[on[event] ?? []].flat(), transitionConfig(d.options, action)]
       }
     } else if (d.kind === 'always') {
@@ -403,7 +407,7 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
       ;(nodeAt(pathOf(d.state, region)).invoke ??= []).push(invocation)
     }
   }
-  return { config, paths, root, delays }
+  return { config, paths, root, delays, events }
 }
 
 // The root enum is the one every other referenced enum descends from.
@@ -502,7 +506,10 @@ function checkSnapshot(ctor: typeof Machine, value: unknown): string | undefined
   const config = (value as Snapshot | null)?.configuration
   if (!Array.isArray(config) || !config.every(p => typeof p === 'string'))
     return 'A snapshot is an object with a configuration: string[]'
-  const probe = createInterpreter(compile(ctor, undefined).config, { clock: manualClock() })
+  const { config, delays } = compile(ctor, undefined)
+  // With no machine, a named delay has no getter to read; the probe's timers never fire anyway.
+  const zero = Object.fromEntries(Object.keys(delays).map(k => [k, () => 0]))
+  const probe = createInterpreter(config, { clock: manualClock(), delays: zero })
   try {
     probe.restore(value as Snapshot)
   } catch (error) {
@@ -732,10 +739,14 @@ export abstract class Machine<S = State> {
   /** `m.can.fetch`: whether calling `fetch()` now would take a transition. */
   get can(): Record<string, boolean> {
     const i = this.#i
+    const events = this.#compiled!.events
     configured.reactivity?.consume(this)
     return new Proxy(
       {},
-      { get: (_t, type) => typeof type === 'string' && i.can({ type, args: [] }) },
+      {
+        get: (_t, key) =>
+          typeof key === 'string' && i.can({ type: events.get(key) ?? key, args: [] }),
+      },
     )
   }
 

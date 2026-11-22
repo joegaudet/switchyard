@@ -105,4 +105,24 @@ describe('dynamic delays', () => {
     clock.advance(1)
     expect(m.state).toBe(Light.Red)
   })
+
+  it('a machine with a named delay restores and validates its snapshots', () => {
+    class Light extends State {
+      static Green = Light.of('green')
+      static Red = Light.of('red')
+    }
+    class Timed extends Machine<Light> {
+      static override clock = manualClock()
+      get greenFor() {
+        return 100
+      }
+
+      @after('greenFor', { from: Light.Green, to: Light.Red })
+      stopNow() {}
+    }
+    const m = new Timed().start()
+    const snap = m.snapshot()
+    expect(() => m.restore(snap)).not.toThrow()
+    expect(Timed.schema()['~standard'].validate(snap)).toEqual({ value: snap })
+  })
 })

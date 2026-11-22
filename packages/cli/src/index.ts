@@ -1,5 +1,5 @@
 // The switchyard command's engine: load machine modules, render or convert them.
-import { existsSync, mkdirSync, readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { dirname, extname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -20,6 +20,8 @@ import { fromScxml, toClassSource, toScxml, toXState, type XStateNode } from '@s
 export interface LoadOptions {
   /** Compile decorators with legacy semantics, as Ember apps do. */
   legacy?: boolean
+  /** Called with each file the bundle was built from: the module and its relative imports. */
+  watch?: (file: string) => void
 }
 
 // The bundle lives under the project's node_modules, so its bare imports resolve there.
@@ -32,27 +34,31 @@ function cacheDir(file: string) {
 }
 
 /** Compiles and imports a TypeScript module; returns its Machine class exports by name. */
-export async function loadMachines(file: string, { legacy = false }: LoadOptions = {}) {
+export async function loadMachines(file: string, { legacy = false, watch }: LoadOptions = {}) {
   const path = resolve(file)
-  const source = readFileSync(path, 'utf8')
   const dir = cacheDir(path)
   mkdirSync(dir, { recursive: true })
-  const hash = createHash('sha1').update(`${path}\0${legacy}\0${source}`).digest('hex').slice(0, 12)
-  const outfile = join(dir, `${hash}.mjs`)
-  if (!existsSync(outfile))
-    await build({
-      entryPoints: [path],
-      outfile,
-      bundle: true,
-      packages: 'external',
-      platform: 'node',
-      format: 'esm',
-      target: 'es2022',
-      logLevel: 'silent',
-      tsconfigRaw: {
-        compilerOptions: { experimentalDecorators: legacy, useDefineForClassFields: !legacy },
-      },
-    })
+  // Built every time, since any file it imports can change; named by its output, so an unchanged
+  // bundle is imported from Node's module cache rather than evaluated again.
+  const result = await build({
+    entryPoints: [path],
+    write: false,
+    metafile: true,
+    outdir: dir,
+    bundle: true,
+    packages: 'external',
+    platform: 'node',
+    format: 'esm',
+    target: 'es2022',
+    logLevel: 'silent',
+    tsconfigRaw: {
+      compilerOptions: { experimentalDecorators: legacy, useDefineForClassFields: !legacy },
+    },
+  })
+  for (const input of Object.keys(result.metafile.inputs)) watch?.(resolve(input))
+  const code = result.outputFiles[0]!.contents
+  const outfile = join(dir, `${createHash('sha1').update(code).digest('hex').slice(0, 12)}.mjs`)
+  if (!existsSync(outfile)) writeFileSync(outfile, code)
   const module = (await import(pathToFileURL(outfile).href)) as Record<string, unknown>
   const machines = new Map<string, MachineClass>()
   for (const [name, value] of Object.entries(module))

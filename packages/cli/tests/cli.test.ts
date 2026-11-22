@@ -1,3 +1,5 @@
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { eventSignatures, loadMachines, run } from '../src/index.js'
@@ -15,6 +17,34 @@ describe('loadMachines', () => {
   it('imports a TypeScript module and finds its Machine classes', async () => {
     const machines = await loadMachines(fixture('fetch.ts'))
     expect([...machines.keys()]).toEqual(['Fetch'])
+  })
+
+  it('sees a change to a file the module imports, and the plugin watches that file', async () => {
+    const dir = mkdtempSync(join(dirname(fixture('fetch.ts')), '.tmp-'))
+    try {
+      const states = (value: string) =>
+        `import { State } from '@switchyard/core'\nexport class S extends State {\n  static A = S.of('${value}')\n}\n`
+      writeFileSync(join(dir, 'states.ts'), states('first'))
+      writeFileSync(
+        join(dir, 'm.ts'),
+        `import { Machine, transition } from '@switchyard/core'\nimport { S } from './states.ts'\nexport class M extends Machine<S> {\n  @transition({ to: S.A })\n  go() {}\n}\n`,
+      )
+      const top = async () =>
+        Object.keys((await loadMachines(join(dir, 'm.ts'))).get('M')!.toConfig().states!)
+      expect(await top()).toEqual(['first'])
+      writeFileSync(join(dir, 'states.ts'), states('second'))
+      expect(await top()).toEqual(['second'])
+
+      const watched: string[] = []
+      const ctx = { addWatchFile: (f: string) => void watched.push(f) }
+      await (switchyard().load as (this: typeof ctx, id: string) => Promise<string | null>).call(
+        ctx,
+        `${join(dir, 'm.ts')}?switchyard=mermaid`,
+      )
+      expect(watched).toContain(join(dir, 'states.ts'))
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   })
 
   it('compiles Ember-style legacy decorators with legacy: true', async () => {

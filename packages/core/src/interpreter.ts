@@ -261,7 +261,7 @@ export function createInterpreter(
       return [...configuration].some(n => n.id === path)
     },
     can(e) {
-      return status === 'active' && selectTransitions(e).length > 0
+      return status === 'active' && selectTransitions(e, true).length > 0
     },
     start() {
       if (status !== 'idle') return this
@@ -527,17 +527,18 @@ export function createInterpreter(
   }
 
   // SCXML 5.9: a condition that throws is false, and raises error.execution.
-  function passes(t: Transition, e: EventObject): boolean {
+  // A probe (`can`) only asks: a guard that throws there is false, and raises nothing.
+  function passes(t: Transition, e: EventObject, probe: boolean): boolean {
     if (!t.guard) return true
     try {
       return t.guard(e)
     } catch (error) {
-      internalQueue.push({ type: 'error.execution', error })
+      if (!probe) internalQueue.push({ type: 'error.execution', error })
       return false
     }
   }
 
-  function selectTransitions(e: EventObject | undefined): Transition[] {
+  function selectTransitions(e: EventObject | undefined, probe = false): Transition[] {
     const enabled = new Set<Transition>()
     const atomic = [...configuration].filter(s => s.type === 'atomic' || s.type === 'final')
     for (const state of atomic.sort(byDocumentOrder)) {
@@ -545,7 +546,7 @@ export function createInterpreter(
         const t = s.transitions.find(
           t =>
             (e ? t.event !== undefined && matchesEvent(t.event, e.type) : t.event === undefined) &&
-            passes(t, e ?? event),
+            passes(t, e ?? event, probe),
         )
         if (t) {
           enabled.add(t)
