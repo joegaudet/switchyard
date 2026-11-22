@@ -721,3 +721,94 @@ td img {
     top: 4rem;
   }
 }
+
+/* The switchyard hero: the class, its events, and the yard its statechart is drawn as. The
+   train and every lit part run on one 12s SMIL timeline in the markup. */
+.yard .groups text {
+  fill: #a5b4fc;
+}
+
+.yard .card-glow {
+  fill: #4f46e5;
+}
+
+.yard .card .kw {
+  fill: #a5b4fc;
+}
+
+.yard .card text {
+  font-size: 11.5px;
+}
+
+.yard .card .lit rect,
+.yard .events .lit rect {
+  fill: rgb(251 191 36 / 0.14);
+  stroke: rgb(251 191 36 / 0.55);
+  stroke-width: 1;
+}
+
+.yard .events > rect {
+  fill: rgb(129 140 248 / 0.08);
+  stroke: rgb(129 140 248 / 0.45);
+  stroke-width: 1;
+}
+
+.yard .events text {
+  fill: #e0e7ff;
+  font-family: var(--pico-font-family-monospace);
+  font-size: 12px;
+  text-anchor: middle;
+}
+
+.yard :is(.ties, .rails, .lit-track) use {
+  fill: none;
+  stroke-linejoin: round;
+}
+
+.yard .ties use {
+  stroke: rgb(255 255 255 / 0.1);
+  stroke-width: 10;
+  stroke-dasharray: 2 7;
+}
+
+.yard .rails use {
+  stroke: rgb(129 140 248 / 0.5);
+  stroke-width: 2;
+}
+
+.yard .lit-track use {
+  stroke: #fbbf24;
+  stroke-width: 2.5;
+}
+
+.yard .switch-label {
+  fill: #64748b;
+  font-family: var(--pico-font-family-sans-serif);
+  font-size: 11px;
+}
+
+.yard .train circle {
+  fill: #fbbf24;
+}
+
+.yard .train .train-glow {
+  fill: #f59e0b;
+  opacity: 0.6;
+  filter: url(#train-glow);
+}
+
+.yard .nodes-lit rect {
+  fill: rgb(79 70 229 / 0.35);
+  stroke: #818cf8;
+  stroke-width: 1.5;
+}
+
+.yard .labels text {
+  text-anchor: middle;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yard :is(.train, .lit, .lit-track, .nodes-lit) {
+    display: none;
+  }
+}

@@ -92,7 +92,7 @@
     </nav>
 
     <header class="hero-band">
-      <div class="container">
+      <div class="container hero">
         <div class="hero-copy">
           <p class="eyebrow">Statecharts for Ember</p>
           <h1>Your machines, written as <span class="gradient-text">classes</span>.</h1>
@@ -112,6 +112,293 @@
             <code>npm i @switchyard-ts/core @switchyard-ts/ember @real-enums/core</code>
           </div>
         </div>
+
+        <svg
+          class="hero-art yard"
+          viewBox="0 0 760 410"
+          role="img"
+          aria-labelledby="hero-art-title"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <title id="hero-art-title">
+            A Fetch class whose methods are its events, and the statechart drawn from it: idle,
+            loading, then a switch to done or failed, with retry running from failed back to
+            loading.
+          </title>
+          <defs>
+            <radialGradient id="hero-glow">
+              <stop offset="0" stop-color="#4f46e5" stop-opacity="0.35" />
+              <stop offset="1" stop-color="#4f46e5" stop-opacity="0" />
+            </radialGradient>
+            <linearGradient id="card-stroke" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#818cf8" />
+              <stop offset="1" stop-color="#4f46e5" stop-opacity="0.4" />
+            </linearGradient>
+            <filter id="card-blur" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="18" />
+            </filter>
+            <filter id="train-glow" x="-200%" y="-200%" width="500%" height="500%">
+              <feGaussianBlur stdDeviation="4" />
+            </filter>
+            <path id="track-fetch" d="M570 80 L570 190" />
+            <path id="track-fail" d="M570 190 L570 250 L670 330" />
+            <path id="track-retry" d="M670 330 L740 275 L740 190 L570 190" />
+            <path id="track-resolve" d="M570 190 L570 250 L470 330" />
+            <!-- The train's whole run: fetch, fail, retry, resolve. -->
+            <path
+              id="route"
+              d="M570 80 L570 190 L570 250 L670 330 L740 275 L740 190 L570 190 L570 250 L470 330"
+            />
+          </defs>
+
+          <ellipse cx="380" cy="205" rx="370" ry="200" fill="url(#hero-glow)" />
+
+          <g class="groups">
+            <text x="16" y="26">Your class</text>
+            <text x="418" y="26">Its statechart</text>
+            <text x="16" y="344">Events are methods</text>
+          </g>
+
+          <!-- The code. Each method's lines light up while its transition runs. -->
+          <g class="card">
+            <rect class="card-glow" x="36" y="60" width="310" height="236" rx="16" />
+            <rect class="card-body" x="16" y="40" width="350" height="276" rx="14" />
+            <g class="lit">
+              <rect x="24" y="80" width="334" height="50" rx="6">
+                <animate
+                  attributeName="opacity"
+                  dur="12s"
+                  repeatCount="indefinite"
+                  keyTimes="0;0.09;0.11;0.19;0.21;1"
+                  values="0;0;1;1;0;0"
+                />
+              </rect>
+              <rect x="24" y="130" width="334" height="50" rx="6">
+                <animate
+                  attributeName="opacity"
+                  dur="12s"
+                  repeatCount="indefinite"
+                  keyTimes="0;0.31;0.33;0.41;0.43;1"
+                  values="0;0;1;1;0;0"
+                />
+              </rect>
+              <rect x="24" y="180" width="334" height="50" rx="6">
+                <animate
+                  attributeName="opacity"
+                  dur="12s"
+                  repeatCount="indefinite"
+                  keyTimes="0;0.53;0.55;0.65;0.67;1"
+                  values="0;0;1;1;0;0"
+                />
+              </rect>
+              <rect x="24" y="230" width="334" height="50" rx="6">
+                <animate
+                  attributeName="opacity"
+                  dur="12s"
+                  repeatCount="indefinite"
+                  keyTimes="0;0.75;0.77;0.85;0.87;1"
+                  values="0;0;1;1;0;0"
+                />
+              </rect>
+            </g>
+            <text x="30" y="72">
+              <tspan class="kw">class</tspan>
+              Fetch
+              <tspan class="kw">extends</tspan>
+              Machine {
+            </text>
+            <text x="44" y="98">
+              <tspan class="muted">@transition({ from: Idle, to: Loading })</tspan>
+            </text>
+            <!-- prettier-ignore -->
+            <text x="44" y="120"><tspan class="fn">fetch</tspan>() {}</text>
+            <text x="44" y="148">
+              <tspan class="muted">@transition({ from: Loading, to: Failed })</tspan>
+            </text>
+            <!-- prettier-ignore -->
+            <text x="44" y="170"><tspan class="fn">fail</tspan>() {}</text>
+            <text x="44" y="198">
+              <tspan class="muted">@transition({ from: Failed, to: Loading })</tspan>
+            </text>
+            <!-- prettier-ignore -->
+            <text x="44" y="220"><tspan class="fn">retry</tspan>() {}</text>
+            <text x="44" y="248">
+              <tspan class="muted">@transition({ from: Loading, to: Done })</tspan>
+            </text>
+            <!-- prettier-ignore -->
+            <text x="44" y="270"><tspan class="fn">resolve</tspan>(user) {}</text>
+            <text x="30" y="298">}</text>
+          </g>
+
+          <!-- The calls, lit as they are sent. -->
+          <g class="events">
+            <rect x="16" y="356" width="76" height="30" rx="15" />
+            <rect x="105" y="356" width="76" height="30" rx="15" />
+            <rect x="194" y="356" width="76" height="30" rx="15" />
+            <rect x="283" y="356" width="83" height="30" rx="15" />
+            <g class="lit">
+              <rect x="16" y="356" width="76" height="30" rx="15">
+                <animate
+                  attributeName="opacity"
+                  dur="12s"
+                  repeatCount="indefinite"
+                  keyTimes="0;0.09;0.11;0.19;0.21;1"
+                  values="0;0;1;1;0;0"
+                />
+              </rect>
+              <rect x="105" y="356" width="76" height="30" rx="15">
+                <animate
+                  attributeName="opacity"
+                  dur="12s"
+                  repeatCount="indefinite"
+                  keyTimes="0;0.31;0.33;0.41;0.43;1"
+                  values="0;0;1;1;0;0"
+                />
+              </rect>
+              <rect x="194" y="356" width="76" height="30" rx="15">
+                <animate
+                  attributeName="opacity"
+                  dur="12s"
+                  repeatCount="indefinite"
+                  keyTimes="0;0.53;0.55;0.65;0.67;1"
+                  values="0;0;1;1;0;0"
+                />
+              </rect>
+              <rect x="283" y="356" width="83" height="30" rx="15">
+                <animate
+                  attributeName="opacity"
+                  dur="12s"
+                  repeatCount="indefinite"
+                  keyTimes="0;0.75;0.77;0.85;0.87;1"
+                  values="0;0;1;1;0;0"
+                />
+              </rect>
+            </g>
+            <text x="54" y="376">fetch()</text>
+            <text x="143" y="376">fail()</text>
+            <text x="232" y="376">retry()</text>
+            <text x="324.5" y="376">resolve()</text>
+          </g>
+
+          <!-- The yard: ties under rails, and each transition's track lit while it is taken. -->
+          <g class="ties">
+            <use href="#track-fetch" />
+            <use href="#track-fail" />
+            <use href="#track-retry" />
+            <use href="#track-resolve" />
+          </g>
+          <g class="rails">
+            <use href="#track-fetch" />
+            <use href="#track-fail" />
+            <use href="#track-retry" />
+            <use href="#track-resolve" />
+          </g>
+          <g class="lit-track">
+            <use href="#track-fetch">
+              <animate
+                attributeName="opacity"
+                dur="12s"
+                repeatCount="indefinite"
+                keyTimes="0;0.09;0.11;0.19;0.21;1"
+                values="0;0;1;1;0;0"
+              />
+            </use>
+            <use href="#track-fail">
+              <animate
+                attributeName="opacity"
+                dur="12s"
+                repeatCount="indefinite"
+                keyTimes="0;0.31;0.33;0.41;0.43;1"
+                values="0;0;1;1;0;0"
+              />
+            </use>
+            <use href="#track-retry">
+              <animate
+                attributeName="opacity"
+                dur="12s"
+                repeatCount="indefinite"
+                keyTimes="0;0.53;0.55;0.65;0.67;1"
+                values="0;0;1;1;0;0"
+              />
+            </use>
+            <use href="#track-resolve">
+              <animate
+                attributeName="opacity"
+                dur="12s"
+                repeatCount="indefinite"
+                keyTimes="0;0.75;0.77;0.85;0.87;1"
+                values="0;0;1;1;0;0"
+              />
+            </use>
+          </g>
+          <text class="switch-label" x="582" y="262">switch</text>
+
+          <!-- The train: it waits in each state, under its node, and runs the track between. -->
+          <g class="train">
+            <circle class="train-glow" r="9" />
+            <circle r="5" />
+            <animateMotion
+              dur="12s"
+              repeatCount="indefinite"
+              calcMode="linear"
+              keyTimes="0;0.10;0.20;0.32;0.42;0.54;0.66;0.76;0.86;1"
+              keyPoints="0;0;0.13251;0.13251;0.35905;0.35905;0.77346;0.77346;1;1"
+            >
+              <mpath href="#route" />
+            </animateMotion>
+          </g>
+
+          <g class="nodes">
+            <rect x="518" y="62" width="104" height="36" rx="8" />
+            <rect x="518" y="172" width="104" height="36" rx="8" />
+            <rect x="418" y="312" width="104" height="36" rx="8" />
+            <rect x="618" y="312" width="104" height="36" rx="8" />
+          </g>
+          <g class="nodes-lit">
+            <rect x="518" y="62" width="104" height="36" rx="8">
+              <animate
+                attributeName="opacity"
+                dur="12s"
+                repeatCount="indefinite"
+                keyTimes="0;0.10;0.12;1"
+                values="1;1;0;0"
+              />
+            </rect>
+            <rect x="518" y="172" width="104" height="36" rx="8">
+              <animate
+                attributeName="opacity"
+                dur="12s"
+                repeatCount="indefinite"
+                keyTimes="0;0.19;0.21;0.31;0.33;0.65;0.67;0.75;0.77;1"
+                values="0;0;1;1;0;0;1;1;0;0"
+              />
+            </rect>
+            <rect x="418" y="312" width="104" height="36" rx="8">
+              <animate
+                attributeName="opacity"
+                dur="12s"
+                repeatCount="indefinite"
+                keyTimes="0;0.85;0.87;0.98;1"
+                values="0;0;1;1;0"
+              />
+            </rect>
+            <rect x="618" y="312" width="104" height="36" rx="8">
+              <animate
+                attributeName="opacity"
+                dur="12s"
+                repeatCount="indefinite"
+                keyTimes="0;0.41;0.43;0.53;0.55;1"
+                values="0;0;1;1;0;0"
+              />
+            </rect>
+          </g>
+          <g class="labels">
+            <text x="570" y="85">Idle</text>
+            <text x="570" y="195">Loading</text>
+            <text x="470" y="335">Done</text>
+            <text x="670" y="335">Failed</text>
+          </g>
+        </svg>
       </div>
     </header>
 
