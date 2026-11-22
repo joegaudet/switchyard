@@ -1,7 +1,7 @@
 // The diagram model, read from a machine config. Labels come from the names the compiler gives
 // guards and actions (see core's `named`), so hand-written configs label the same way.
 import { isFunction } from '@sindresorhus/is'
-import type { Machine, MachineConfig, StateConfig, TransitionConfig } from '@switchyard/core'
+import type { Machine, MachineConfig, StateConfig, TransitionConfig } from '@switchyard-ts/core'
 
 export type StateType = 'atomic' | 'compound' | 'parallel' | 'final' | 'history'
 

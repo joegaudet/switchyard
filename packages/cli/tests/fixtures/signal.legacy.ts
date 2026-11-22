@@ -1,6 +1,6 @@
 // Ember-style source: legacy decorators on `declare` fields.
 import { is } from '@real-enums/core'
-import { Machine, State, transition } from '@switchyard/core'
+import { Machine, State, transition } from '@switchyard-ts/core'
 
 export class Light extends State {
   static Red = Light.of('red')

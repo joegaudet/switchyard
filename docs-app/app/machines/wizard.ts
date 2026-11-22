@@ -1,5 +1,5 @@
 import { tracked } from '@glimmer/tracking'
-import { history, Machine, State, transition } from '@switchyard/core'
+import { history, Machine, State, transition } from '@switchyard-ts/core'
 
 export class Details extends State {
   static Name = Details.of('name')

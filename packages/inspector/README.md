@@ -1,4 +1,4 @@
-# @switchyard/inspector
+# @switchyard-ts/inspector
 
 `connectInspector(machine, createBrowserInspector())` streams a machine, and the machines it
 spawns or invokes, to the [Stately Inspector](https://stately.ai/docs/inspector).

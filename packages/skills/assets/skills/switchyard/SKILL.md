@@ -84,25 +84,25 @@ class Fetch extends Machine<FetchState> {
 
 ## Ember
 
-Import `@switchyard/ember` once (it wires tracking and test waiters). Then
+Import `@switchyard-ts/ember` once (it wires tracking and test waiters). Then
 `fetch = machine(this, new Fetch())` in a component or service (stopped on destroy), and in
 templates `{{on "click" (send this.fetch "retry")}}`, `(matches this.fetch FetchState.Done)`,
 `(can this.fetch "retry")`. `<SwitchyardDebug @machine={{this.fetch}} />` from
-`@switchyard/ember/debug` shows the live chart.
+`@switchyard-ts/ember/debug` shows the live chart.
 
 ## Testing
 
-- `@after` in tests: `const clock = useManualClock(Fetch)` (from `@switchyard/test`), then
+- `@after` in tests: `const clock = useManualClock(Fetch)` (from `@switchyard-ts/test`), then
   `clock.advance(ms)`. In Ember tests `await settled()` waits for invokes and timers.
 - Assert with `expect(m).toBeIn(State.X)` after `expect.extend(matchers)`, or QUnit's
   `assert.machineIn(m, State.X)` after `setupMachineAssertions(assert)`.
 - `coverage(Fetch)` + `track(m)` reports states and transitions no test reached.
-- Model-based tests (`@switchyard/harnessed`): `modelTests({ machine, events, states })` gives
+- Model-based tests (`@switchyard-ts/harnessed`): `modelTests({ machine, events, states })` gives
   one test per path; drive events and check states through a harness.
 
 ## Before finishing
 
 - `npx switchyard diagram src/fetch.ts` (add `--legacy` for Ember sources) and read the chart:
   unreachable states and missing transitions show up at a glance.
-- Lint with `@switchyard/eslint-plugin` (`configs.recommended`): unreachable states, unknown
+- Lint with `@switchyard-ts/eslint-plugin` (`configs.recommended`): unreachable states, unknown
   guards, non-exhaustive `switch (m.state)`.

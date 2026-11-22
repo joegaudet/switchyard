@@ -1,8 +1,8 @@
 // Model-based tests: the machine is the model, a harness drives the real UI. Each path the
 // model can take becomes a test that fires its events through the harness and checks the UI
 // after every step. Runner-agnostic: register `name` and `run` with any runner harnessed supports.
-import type { Machine } from '@switchyard/core'
-import { shortestPaths, simplePaths, type ModelPath } from '@switchyard/test'
+import type { Machine } from '@switchyard-ts/core'
+import { shortestPaths, simplePaths, type ModelPath } from '@switchyard-ts/test'
 
 export interface ModelTestOptions<M extends Machine<unknown>, H> {
   /** A fresh model machine. */

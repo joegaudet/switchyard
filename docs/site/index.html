@@ -109,7 +109,7 @@
           </div>
           <div class="install">
             <span class="prompt" aria-hidden="true">$</span>
-            <code>npm i @switchyard/core @switchyard/ember @real-enums/core</code>
+            <code>npm i @switchyard-ts/core @switchyard-ts/ember @real-enums/core</code>
           </div>
         </div>
       </div>
@@ -188,7 +188,7 @@ class Fetch extends Machine&lt;FetchState&gt; {
       <section id="ember">
         <p class="eyebrow">Ember</p>
         <h2>Tracked, owned, and waited for</h2>
-        <pre><code class="language-handlebars">import { machine, send, can } from '@switchyard/ember'
+        <pre><code class="language-handlebars">import { machine, send, can } from '@switchyard-ts/ember'
 
 export default class UserCard extends Component {
   fetch = machine(this, new Fetch()) // stops when the component is destroyed
@@ -243,46 +243,46 @@ export default class UserCard extends Component {
           </thead>
           <tbody>
             <tr>
-              <td><code>@switchyard/core</code></td>
+              <td><code>@switchyard-ts/core</code></td>
               <td>Machines, decorators, the interpreter, snapshots</td>
             </tr>
             <tr>
-              <td><code>@switchyard/ember</code></td>
+              <td><code>@switchyard-ts/ember</code></td>
               <td>
                 Tracking, lifetimes, helpers, waiters, <code>&lt;SwitchyardAnnouncer&gt;</code>,
                 <code>&lt;SwitchyardDebug&gt;</code>
               </td>
             </tr>
             <tr>
-              <td><code>@switchyard/graph</code></td>
+              <td><code>@switchyard-ts/graph</code></td>
               <td>Mermaid, DOT, SVG, interface and actor views, the live viewer</td>
             </tr>
             <tr>
-              <td><code>@switchyard/test</code></td>
+              <td><code>@switchyard-ts/test</code></td>
               <td>Paths, coverage, matchers, a manual clock</td>
             </tr>
             <tr>
-              <td><code>@switchyard/harnessed</code></td>
+              <td><code>@switchyard-ts/harnessed</code></td>
               <td>Model-based tests through harnessed</td>
             </tr>
             <tr>
-              <td><code>@switchyard/interop</code></td>
+              <td><code>@switchyard-ts/interop</code></td>
               <td>xstate JSON and SCXML, both ways, and codegen</td>
             </tr>
             <tr>
-              <td><code>@switchyard/inspector</code></td>
+              <td><code>@switchyard-ts/inspector</code></td>
               <td>The Stately Inspector</td>
             </tr>
             <tr>
-              <td><code>@switchyard/cli</code></td>
+              <td><code>@switchyard-ts/cli</code></td>
               <td><code>switchyard diagram|export|import</code>, and a Vite plugin</td>
             </tr>
             <tr>
-              <td><code>@switchyard/eslint-plugin</code></td>
+              <td><code>@switchyard-ts/eslint-plugin</code></td>
               <td>Unreachable states, unknown guards, non-exhaustive switches</td>
             </tr>
             <tr>
-              <td><code>@switchyard/skills</code></td>
+              <td><code>@switchyard-ts/skills</code></td>
               <td>The authoring skill for coding agents</td>
             </tr>
           </tbody>

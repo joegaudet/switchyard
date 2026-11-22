@@ -1,5 +1,5 @@
 ---
-'@switchyard/interop': minor
+'@switchyard-ts/interop': minor
 ---
 
 Interop: `toXState()` exports xstate v5 JSON, `fromXState()` imports an xstate config as a

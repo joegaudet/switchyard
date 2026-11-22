@@ -1,7 +1,7 @@
 import Component from '@glimmer/component'
 import { on } from '@ember/modifier'
 import { Form } from '@ember-formwright/ember'
-import { can, machine, matches, send } from '@switchyard/ember'
+import { can, machine, matches, send } from '@switchyard-ts/ember'
 import { Example } from 'docs-app/components/example'
 import { Details, SignupWizard, Step } from 'docs-app/machines/wizard'
 import source from 'docs-app/machines/wizard.ts?raw'

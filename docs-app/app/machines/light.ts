@@ -1,4 +1,4 @@
-import { after, Machine, State, transition } from '@switchyard/core'
+import { after, Machine, State, transition } from '@switchyard-ts/core'
 
 export class Crossing extends State {
   static Wait = Crossing.of('wait')

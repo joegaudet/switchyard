@@ -1,5 +1,5 @@
 {
-  "name": "@switchyard/skills",
+  "name": "@switchyard-ts/skills",
   "version": "0.0.0",
   "description": "Installs the Switchyard authoring skill into a repo's .claude/ directory.",
   "keywords": [

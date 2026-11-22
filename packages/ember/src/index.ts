@@ -3,7 +3,7 @@
 import { tracked } from '@glimmer/tracking'
 import { registerDestructor } from '@ember/destroyable'
 import { buildWaiter, waitForPromise } from '@ember/test-waiters'
-import { configure, type Clock, type Machine, type State } from '@switchyard/core'
+import { configure, type Clock, type Machine, type State } from '@switchyard-ts/core'
 
 class Version {
   @tracked value = 0
@@ -19,7 +19,7 @@ function version(machine: object): Version {
   return v
 }
 
-const waiter = buildWaiter('@switchyard/ember:after')
+const waiter = buildWaiter('@switchyard-ts/ember:after')
 const tokens = new Map<unknown, unknown>()
 
 /** setTimeout with a test waiter per pending timer. A long `@after` holds `settled()` that long. */

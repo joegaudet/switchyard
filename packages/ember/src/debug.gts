@@ -1,9 +1,9 @@
 // <SwitchyardDebug @machine={{this.fetch}} />: the machine's live statechart, for development.
-// Its own entrypoint, so ELK (via @switchyard/graph) loads only where it is used.
+// Its own entrypoint, so ELK (via @switchyard-ts/graph) loads only where it is used.
 import type { TOC } from '@ember/component/template-only'
 import { modifier } from 'ember-modifier'
-import type { Machine } from '@switchyard/core'
-import { defineDiagramElement, type SwitchyardDiagram } from '@switchyard/graph/viewer'
+import type { Machine } from '@switchyard-ts/core'
+import { defineDiagramElement, type SwitchyardDiagram } from '@switchyard-ts/graph/viewer'
 
 defineDiagramElement()
 

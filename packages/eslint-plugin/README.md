@@ -1,7 +1,7 @@
-# @switchyard/eslint-plugin
+# @switchyard-ts/eslint-plugin
 
 ```js
-import switchyard from '@switchyard/eslint-plugin'
+import switchyard from '@switchyard-ts/eslint-plugin'
 export default [switchyard.configs.recommended]
 ```
 

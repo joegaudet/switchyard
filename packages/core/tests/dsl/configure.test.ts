@@ -1,4 +1,4 @@
-// configure(): the seams a framework adapter (@switchyard/ember) plugs into.
+// configure(): the seams a framework adapter (@switchyard-ts/ember) plugs into.
 import { afterEach, describe, expect, it } from 'vitest'
 import { configure, manualClock, type Configuration } from '../../src/index.js'
 import { Fetch, FetchState, Job, Worker } from './machines.standard.js'

@@ -6,7 +6,7 @@ import { dirname, extname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 import { build } from 'esbuild'
-import type { MachineConfig } from '@switchyard/core'
+import type { MachineConfig } from '@switchyard-ts/core'
 import {
   describeInterface,
   interfaceToMermaid,
@@ -15,8 +15,14 @@ import {
   toMermaid,
   toSvg,
   type MachineClass,
-} from '@switchyard/graph'
-import { fromScxml, toClassSource, toScxml, toXState, type XStateNode } from '@switchyard/interop'
+} from '@switchyard-ts/graph'
+import {
+  fromScxml,
+  toClassSource,
+  toScxml,
+  toXState,
+  type XStateNode,
+} from '@switchyard-ts/interop'
 
 export interface LoadOptions {
   /** Compile decorators with legacy semantics, as Ember apps do. */

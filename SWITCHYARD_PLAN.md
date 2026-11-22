@@ -6,7 +6,7 @@ methods, and its context is `@tracked` fields. It aims for full xstate v5 parity
 semantics, without xstate's config-object/hook style. It's the spiritual successor to
 ember-statecharts.
 
-Deliverables: this repo (`joegaudet/switchyard`, public, MIT), the `@switchyard/*` packages,
+Deliverables: this repo (`joegaudet/switchyard`, public, MIT), the `@switchyard-ts/*` packages,
 a marketing site and guide at **joegaudet.com/switchyard**, and updates to real-enums,
 ember-formwright, harnessed and ember-joinery.
 
@@ -21,7 +21,7 @@ real-enums, with an indigo accent.
 
 | #   | Decision                                                                                                                                                                                                                                                                                                                           |
 | --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Framework-agnostic `@switchyard/core`, plus `@switchyard/ember` for tracking, destroyables, test waiters and helpers                                                                                                                                                                                                               |
+| 1   | Framework-agnostic `@switchyard-ts/core`, plus `@switchyard-ts/ember` for tracking, destroyables, test waiters and helpers                                                                                                                                                                                                         |
 | 2   | **Full xstate v5 parity** for 1.0                                                                                                                                                                                                                                                                                                  |
 | 3   | Spiritual successor to ember-statecharts; the guide has a migration page                                                                                                                                                                                                                                                           |
 | 27  | SCXML run-to-completion semantics (macrosteps and microsteps, internal/external queues, document-order conflict resolution), checked by a conformance suite. Event descriptors follow xstate v5 (exact, `x.*`, `*`), since SCXML's prefix matching makes `done.state.p` match `done.state.p.r1`; SCXML import translates (Phase 1) |
@@ -99,13 +99,13 @@ class Fetch extends Machine<FetchState> {
 
 ### Persistence, devtools and diagrams
 
-| #   | Decision                                                                                                                                                                                                                                                                                              |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 25  | Persistence: `snapshot()`/`restore()` (enums serialized through real-enums codecs), a record attribute or query param bound to a machine's state (`bindField`, Phase 5: one core function covers both, so there is no `@switchyard/warp-drive`), and Standard Schema validation of restored snapshots |
-| 26  | Devtools: an `inspect()` event stream, Stately Inspector protocol compatibility, an Ember Inspector tab, and a `<SwitchyardDebug @machine=… />` live-diagram overlay                                                                                                                                  |
-| 29  | Diagrams: the statechart (with `event [guard] / action` labels), a class-interface view (events with payload types, context, guards, actions, actors), actor topology, and a live, animated view                                                                                                      |
-| 30  | Diagram formats: Mermaid, SVG laid out with ELK, DOT, and an interactive web component                                                                                                                                                                                                                |
-| 31  | Diagrams come from runtime reflection (`Machine.toGraph()` reading decorator metadata) and from a build-time CLI/Vite plugin. The interface view uses the TS compiler API for payload types                                                                                                           |
+| #   | Decision                                                                                                                                                                                                                                                                                                 |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 25  | Persistence: `snapshot()`/`restore()` (enums serialized through real-enums codecs), a record attribute or query param bound to a machine's state (`bindField`, Phase 5: one core function covers both, so there is no `@switchyard-ts/warp-drive`), and Standard Schema validation of restored snapshots |
+| 26  | Devtools: an `inspect()` event stream, Stately Inspector protocol compatibility, an Ember Inspector tab, and a `<SwitchyardDebug @machine=… />` live-diagram overlay                                                                                                                                     |
+| 29  | Diagrams: the statechart (with `event [guard] / action` labels), a class-interface view (events with payload types, context, guards, actions, actors), actor topology, and a live, animated view                                                                                                         |
+| 30  | Diagram formats: Mermaid, SVG laid out with ELK, DOT, and an interactive web component                                                                                                                                                                                                                   |
+| 31  | Diagrams come from runtime reflection (`Machine.toGraph()` reading decorator metadata) and from a build-time CLI/Vite plugin. The interface view uses the TS compiler API for payload types                                                                                                              |
 
 ### Testing and tooling
 
@@ -142,16 +142,16 @@ in each. real-enums gets **additive minor releases only**. Joinery adopts switch
 
 ```
 packages/
-  core/          @switchyard/core        State, Machine, decorators, interpreter, actors, inspect, snapshot
-  ember/         @switchyard/ember       v2 addon: tracking, owner/destroyables, resource, helpers, waiters, services
-  graph/         @switchyard/graph       toGraph(), Mermaid, DOT and ELK→SVG; /viewer: the live web component
-  interop/       @switchyard/interop     xstate JSON and SCXML import/export, plus the codegen
-  test/          @switchyard/test        clock, matchers, coverage, and model-based paths
-  harnessed/     @switchyard/harnessed   MBT on harnessed
-  inspector/     @switchyard/inspector   the Stately Inspector protocol
-  eslint-plugin/ @switchyard/eslint-plugin
-  cli/           @switchyard/cli         bin: switchyard; /vite: build-time diagrams
-  skills/        @switchyard/skills      Claude skills
+  core/          @switchyard-ts/core        State, Machine, decorators, interpreter, actors, inspect, snapshot
+  ember/         @switchyard-ts/ember       v2 addon: tracking, owner/destroyables, resource, helpers, waiters, services
+  graph/         @switchyard-ts/graph       toGraph(), Mermaid, DOT and ELK→SVG; /viewer: the live web component
+  interop/       @switchyard-ts/interop     xstate JSON and SCXML import/export, plus the codegen
+  test/          @switchyard-ts/test        clock, matchers, coverage, and model-based paths
+  harnessed/     @switchyard-ts/harnessed   MBT on harnessed
+  inspector/     @switchyard-ts/inspector   the Stately Inspector protocol
+  eslint-plugin/ @switchyard-ts/eslint-plugin
+  cli/           @switchyard-ts/cli         bin: switchyard; /vite: build-time diagrams
+  skills/        @switchyard-ts/skills      Claude skills
 docs/site/       hand-written landing page (+ guide/ built from docs-app)
 docs-app/        Ember guide app, one live example per feature
 test-app/        Ember integration tests and the demo build
@@ -168,10 +168,9 @@ The repo, the template config, `ci.yml`, `State` with tests, the icon and this p
 
 Open items before anything publishes:
 
-- **Claim the `@switchyard` npm org.** Unscoped `switchyard` is taken (an express router from
-  2022, so there's no bare `npx switchyard`; `@switchyard/cli` still provides the
-  `switchyard` bin). Whether the scope is free couldn't be verified from here. The fallback
-  scope is `@switchyard-js`.
+- **The npm scope is `@switchyard-ts`** (changed 2026-11-21: the `@switchyard` org belongs to
+  someone else). Unscoped `switchyard` is taken too (an express router from 2022, so there's no
+  bare `npx switchyard`; `@switchyard-ts/cli` still provides the `switchyard` bin).
 - Add `release.yml` and `bootstrap-publish.yml` from real-enums. Set `RELEASE_APP_CLIENT_ID`
   and `RELEASE_APP_PRIVATE_KEY` on the repo, and set up trusted publishing per package. They
   were left out of the scaffold because the version job fails without the app secrets, which
@@ -201,7 +200,7 @@ Promise, callback and observable actors, `spawn`, `sendTo`, `sendParent`, `syste
 registry, `emit()`, `onDone` and `onError` with output, `AbortSignal` on state exit, the
 injectable clock, and `inspect()`.
 
-### Phase 4: `@switchyard/ember`
+### Phase 4: `@switchyard-ts/ember`
 
 Tracked state and context, owner and destroyable integration, the resource, helpers (`send`,
 `matches`, `can`), service singletons, test waiters for invoke and `after`, and Glint types.
@@ -214,30 +213,30 @@ attributes (mirror) and query params (accessor).
 
 ### Phase 6: Diagrams
 
-`@switchyard/graph`: `toGraph()`; Mermaid, DOT and ELK→SVG for the statechart; the interface
-view and actor topology; and `@switchyard/graph/viewer`, the live `<switchyard-diagram>` web
+`@switchyard-ts/graph`: `toGraph()`; Mermaid, DOT and ELK→SVG for the statechart; the interface
+view and actor topology; and `@switchyard-ts/graph/viewer`, the live `<switchyard-diagram>` web
 component (folded in from a separate viewer package, since it is a few dozen lines over the
-SVG). `<SwitchyardDebug>` is `@switchyard/ember/debug`. Payload types in the interface view
+SVG). `<SwitchyardDebug>` is `@switchyard-ts/ember/debug`. Payload types in the interface view
 come with the build-time CLI (Phase 9).
 
 ### Phase 7: Interop
 
-`@switchyard/interop`: xstate JSON export (so Stately Studio opens our machines), xstate
+`@switchyard-ts/interop`: xstate JSON export (so Stately Studio opens our machines), xstate
 config → decorated-class codegen, and SCXML import and export, round-tripped through
 `conformance/`.
 
 ### Phase 8: Testing kit
 
-`@switchyard/test` (clock, matchers, coverage report, path generation) and
-`@switchyard/harnessed` (MBT).
+`@switchyard-ts/test` (clock, matchers, coverage report, path generation) and
+`@switchyard-ts/harnessed` (MBT).
 
 ### Phase 9: Tooling
 
-`@switchyard/inspector` (`connectInspector()` for the Stately Inspector), the ESLint plugin
-(unreachable states, unknown guards, non-exhaustive state switches), `@switchyard/cli`
+`@switchyard-ts/inspector` (`connectInspector()` for the Stately Inspector), the ESLint plugin
+(unreachable states, unknown guards, non-exhaustive state switches), `@switchyard-ts/cli`
 (`switchyard diagram|export|import`, with payload types read from source) and its Vite plugin
-at `@switchyard/cli/vite` (folded in: it is the CLI's renderer behind a query string), and
-`@switchyard/skills`. Dropped: an **Ember Inspector tab**, since the inspector has no public
+at `@switchyard-ts/cli/vite` (folded in: it is the CLI's renderer behind a query string), and
+`@switchyard-ts/skills`. Dropped: an **Ember Inspector tab**, since the inspector has no public
 extension point for third-party tabs (emberjs/ember-inspector#321); `<SwitchyardDebug>` and the
 Stately Inspector cover live inspection. Deferred: a `coverage` CLI command, which needs reports
 serialized from test runs.
@@ -268,7 +267,7 @@ conformance suite and the xstate feature matrix are fully green.
 3. **ember-formwright:** run the submit/validation lifecycle on switchyard, add a wizard
    integration, and add a guide page.
 4. **harnessed:** MBT documentation and examples (the package lives here, as
-   `@switchyard/harnessed`).
+   `@switchyard-ts/harnessed`).
 5. **ember-joinery, after 1.0:** move the stateful primitives (dialog, combobox, menu, tabs)
    onto machines in a 1.x minor.
 

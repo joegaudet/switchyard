@@ -1,5 +1,5 @@
 {
-  "name": "@switchyard/interop",
+  "name": "@switchyard-ts/interop",
   "version": "0.0.0",
   "description": "Switchyard interop: xstate JSON export and import, xstate-to-class codegen, SCXML import and export.",
   "keywords": [
@@ -44,11 +44,11 @@
     "node": ">=22.12.0"
   },
   "peerDependencies": {
-    "@switchyard/core": "workspace:^"
+    "@switchyard-ts/core": "workspace:^"
   },
   "devDependencies": {
     "@real-enums/core": "^2.2.0",
-    "@switchyard/core": "workspace:^",
+    "@switchyard-ts/core": "workspace:^",
     "xstate": "^5.33.4"
   },
   "dependencies": {

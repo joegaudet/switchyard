@@ -2,7 +2,7 @@
 // real Ember app compiles them.
 import { tracked } from '@glimmer/tracking'
 import { is } from '@real-enums/core'
-import { after, invoke, Machine, State, transition } from '@switchyard/core'
+import { after, invoke, Machine, State, transition } from '@switchyard-ts/core'
 
 export class FetchState extends State {
   static Idle = FetchState.of('idle')

@@ -1,4 +1,4 @@
-import { Machine, region, State, transition } from '@switchyard/core'
+import { Machine, region, State, transition } from '@switchyard-ts/core'
 
 export class Toggle extends State {
   static Off = Toggle.of('off')

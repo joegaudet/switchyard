@@ -58,10 +58,10 @@ Switchyard and compare the configuration after every event.
 | `inspect`                                               | `m.inspect()`; the Stately Inspector via `connectInspector`  | ✓   | `conformance/actors.test.ts`, `inspector/tests`           |
 | `waitFor`, `toPromise`                                  | Same names                                                   | ✓   | `dsl/parity.test.ts`                                      |
 | Pure `transition()` / `getNextSnapshot`                 | none                                                         | ✗   | not planned for 1.0                                       |
-| `@xstate/graph` paths, `@xstate/test`                   | `@switchyard/test`, `@switchyard/harnessed`                  | ✓   | `test/tests`, `harnessed/tests`                           |
+| `@xstate/graph` paths, `@xstate/test`                   | `@switchyard-ts/test`, `@switchyard-ts/harnessed`            | ✓   | `test/tests`, `harnessed/tests`                           |
 
 ## What 1.0 waits on
 
 - The ✗ rows are deliberate omissions for 1.0, listed so nobody discovers them by surprise.
-- Publishing waits on the `@switchyard` npm org, trusted publishing per package, and the
+- Publishing waits on the `@switchyard-ts` npm org, trusted publishing per package, and the
   release app secrets (see CONTRIBUTING, "Releasing").

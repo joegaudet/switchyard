@@ -1,5 +1,5 @@
 {
-  "name": "@switchyard/inspector",
+  "name": "@switchyard-ts/inspector",
   "version": "0.0.0",
   "description": "Stream Switchyard machines to the Stately Inspector.",
   "keywords": [
@@ -43,13 +43,13 @@
     "node": ">=22.12.0"
   },
   "peerDependencies": {
-    "@switchyard/core": "workspace:^",
-    "@switchyard/interop": "workspace:^"
+    "@switchyard-ts/core": "workspace:^",
+    "@switchyard-ts/interop": "workspace:^"
   },
   "devDependencies": {
     "@real-enums/core": "^2.2.0",
     "@statelyai/inspect": "^0.7.2",
-    "@switchyard/core": "workspace:^",
-    "@switchyard/interop": "workspace:^"
+    "@switchyard-ts/core": "workspace:^",
+    "@switchyard-ts/interop": "workspace:^"
   }
 }

@@ -1,5 +1,5 @@
 ---
-'@switchyard/core': minor
+'@switchyard-ts/core': minor
 ---
 
 `createInterpreter(config)`: an SCXML interpreter over a plain-data statechart config, with

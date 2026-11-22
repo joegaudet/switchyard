@@ -217,7 +217,7 @@ function decorationsOf(ctor: typeof Machine): Decoration[] {
   })
 }
 
-// Diagrams label transitions with these names; see @switchyard/graph.
+// Diagrams label transitions with these names; see @switchyard-ts/graph.
 const named = <F extends (...args: never[]) => unknown>(fn: F, name: string): F =>
   Object.defineProperty(fn, 'name', { value: name })
 
@@ -479,7 +479,7 @@ const message = <K extends keyof Messages>(key: K): Messages[K] =>
 
 const configured: Configuration = {}
 
-/** Process-wide adapter hooks. `@switchyard/ember` calls this on import. */
+/** Process-wide adapter hooks. `@switchyard-ts/ember` calls this on import. */
 export function configure(options: Configuration): void {
   Object.assign(configured, options)
 }

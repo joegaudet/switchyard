@@ -1,13 +1,13 @@
 ---
-'@switchyard/cli': minor
-'@switchyard/eslint-plugin': minor
-'@switchyard/inspector': minor
-'@switchyard/skills': minor
-'@switchyard/graph': minor
-'@switchyard/core': patch
+'@switchyard-ts/cli': minor
+'@switchyard-ts/eslint-plugin': minor
+'@switchyard-ts/inspector': minor
+'@switchyard-ts/skills': minor
+'@switchyard-ts/graph': minor
+'@switchyard-ts/core': patch
 ---
 
 Tooling: the `switchyard` CLI (diagram, export, import; payload types from source) with a Vite
-plugin at `@switchyard/cli/vite`; an ESLint plugin (unreachable states, unknown guards,
+plugin at `@switchyard-ts/cli/vite`; an ESLint plugin (unreachable states, unknown guards,
 non-exhaustive state switches); `connectInspector()` for the Stately Inspector; and
-`@switchyard/skills`. `interfaceToMermaid` takes method signatures. `spawn` notifies.
+`@switchyard-ts/skills`. `interfaceToMermaid` takes method signatures. `spawn` notifies.

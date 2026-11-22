@@ -1,5 +1,5 @@
 import { createInspector } from '@statelyai/inspect'
-import { Machine, region, State, transition } from '@switchyard/core'
+import { Machine, region, State, transition } from '@switchyard-ts/core'
 import { describe, expect, it } from 'vitest'
 import { connectInspector, toXStateValue } from '../src/index.js'
 

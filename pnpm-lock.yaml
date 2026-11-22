@@ -110,13 +110,13 @@ importers:
       '@rollup/plugin-babel':
         specifier: ^7.1.0
         version: 7.1.0(@babel/core@7.29.13(supports-color@7.2.0))(rollup@4.68.7)(supports-color@7.2.0)
-      '@switchyard/core':
+      '@switchyard-ts/core':
         specifier: workspace:*
         version: link:../packages/core
-      '@switchyard/ember':
+      '@switchyard-ts/ember':
         specifier: workspace:*
         version: link:../packages/ember
-      '@switchyard/graph':
+      '@switchyard-ts/graph':
         specifier: workspace:*
         version: link:../packages/graph
       babel-plugin-ember-template-compilation:
@@ -155,10 +155,10 @@ importers:
       '@sindresorhus/is':
         specifier: ^8.1.0
         version: 8.1.0
-      '@switchyard/graph':
+      '@switchyard-ts/graph':
         specifier: workspace:^
         version: link:../graph
-      '@switchyard/interop':
+      '@switchyard-ts/interop':
         specifier: workspace:^
         version: link:../interop
       esbuild:
@@ -171,7 +171,7 @@ importers:
       '@real-enums/core':
         specifier: ^2.2.0
         version: 2.2.1
-      '@switchyard/core':
+      '@switchyard-ts/core':
         specifier: workspace:^
         version: link:../core
 
@@ -230,10 +230,10 @@ importers:
       '@rollup/plugin-babel':
         specifier: ^7.1.0
         version: 7.1.0(@babel/core@7.29.13(supports-color@7.2.0))(rollup@4.68.7)(supports-color@7.2.0)
-      '@switchyard/core':
+      '@switchyard-ts/core':
         specifier: workspace:^
         version: link:../core
-      '@switchyard/graph':
+      '@switchyard-ts/graph':
         specifier: workspace:^
         version: link:../graph
       babel-plugin-ember-template-compilation:
@@ -277,7 +277,7 @@ importers:
       '@real-enums/core':
         specifier: ^2.2.0
         version: 2.2.1
-      '@switchyard/core':
+      '@switchyard-ts/core':
         specifier: workspace:^
         version: link:../core
 
@@ -292,10 +292,10 @@ importers:
       '@real-enums/core':
         specifier: ^2.2.0
         version: 2.2.1
-      '@switchyard/core':
+      '@switchyard-ts/core':
         specifier: workspace:^
         version: link:../core
-      '@switchyard/test':
+      '@switchyard-ts/test':
         specifier: workspace:^
         version: link:../test
       '@testing-library/dom':
@@ -313,10 +313,10 @@ importers:
       '@statelyai/inspect':
         specifier: ^0.7.2
         version: 0.7.2(xstate@5.33.4)
-      '@switchyard/core':
+      '@switchyard-ts/core':
         specifier: workspace:^
         version: link:../core
-      '@switchyard/interop':
+      '@switchyard-ts/interop':
         specifier: workspace:^
         version: link:../interop
 
@@ -332,7 +332,7 @@ importers:
       '@real-enums/core':
         specifier: ^2.2.0
         version: 2.2.1
-      '@switchyard/core':
+      '@switchyard-ts/core':
         specifier: workspace:^
         version: link:../core
       xstate:
@@ -354,10 +354,10 @@ importers:
       '@real-enums/core':
         specifier: ^2.2.0
         version: 2.2.1
-      '@switchyard/core':
+      '@switchyard-ts/core':
         specifier: workspace:^
         version: link:../core
-      '@switchyard/graph':
+      '@switchyard-ts/graph':
         specifier: workspace:^
         version: link:../graph
 
@@ -426,13 +426,13 @@ importers:
       '@rollup/plugin-babel':
         specifier: ^7.1.0
         version: 7.1.0(@babel/core@7.29.13(supports-color@7.2.0))(rollup@4.68.7)(supports-color@7.2.0)
-      '@switchyard/core':
+      '@switchyard-ts/core':
         specifier: workspace:*
         version: link:../packages/core
-      '@switchyard/ember':
+      '@switchyard-ts/ember':
         specifier: workspace:*
         version: link:../packages/ember
-      '@switchyard/graph':
+      '@switchyard-ts/graph':
         specifier: workspace:*
         version: link:../packages/graph
       '@types/qunit':

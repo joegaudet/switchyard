@@ -2,7 +2,7 @@
 import { ByRole, ByTestId, ComponentHarness, Harness, testId, type Query } from '@harnessed-ts/core'
 import { dom } from '@harnessed-ts/dom'
 import userEvent from '@testing-library/user-event'
-import { Machine, State, transition } from '@switchyard/core'
+import { Machine, State, transition } from '@switchyard-ts/core'
 import { describe, expect, it } from 'vitest'
 import { modelTests } from '../src/index.js'
 

@@ -1,4 +1,4 @@
-# @switchyard/harnessed
+# @switchyard-ts/harnessed
 
 Model-based tests: `modelTests({ machine, events, states })` gives one test per path through the
 machine, each driving the real UI through a [harnessed](https://joegaudet.com/harnessed/) harness

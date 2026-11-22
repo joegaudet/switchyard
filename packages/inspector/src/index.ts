@@ -1,7 +1,7 @@
 // Streams a machine, and the child machines it spawns or invokes, to the Stately Inspector
 // (https://stately.ai/docs/inspector) or anything else that takes its inspection calls.
-import type { Machine } from '@switchyard/core'
-import { toXState } from '@switchyard/interop'
+import type { Machine } from '@switchyard-ts/core'
+import { toXState } from '@switchyard-ts/interop'
 
 /**
  * What the inspector reads from an actor: @statelyai/inspect takes the definition from

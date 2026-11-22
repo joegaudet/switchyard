@@ -1,6 +1,6 @@
 import Component from '@glimmer/component'
 import { on } from '@ember/modifier'
-import { machine, matches, send } from '@switchyard/ember'
+import { machine, matches, send } from '@switchyard-ts/ember'
 import { Example } from 'docs-app/components/example'
 import { Crossing, Light, TrafficLight } from 'docs-app/machines/light'
 import source from 'docs-app/machines/light.ts?raw'

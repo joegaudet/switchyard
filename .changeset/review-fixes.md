@@ -1,7 +1,7 @@
 ---
-'@switchyard/core': patch
-'@switchyard/interop': patch
-'@switchyard/cli': patch
+'@switchyard-ts/core': patch
+'@switchyard-ts/interop': patch
+'@switchyard-ts/cli': patch
 ---
 
 Fixes from the pre-release review. `toClassSource` (and `switchyard import`) writes every name

@@ -6,8 +6,8 @@ import type Owner from '@ember/owner'
 import Service, { service } from '@ember/service'
 import { tracked } from '@glimmer/tracking'
 import { on } from '@ember/modifier'
-import { can, machine, matches, send } from '@switchyard/ember'
-import { machineResource } from '@switchyard/ember/resource'
+import { can, machine, matches, send } from '@switchyard-ts/ember'
+import { machineResource } from '@switchyard-ts/ember/resource'
 import { Fetch, FetchState, Session, Timer } from 'test-app/machines'
 
 let lastFetch: Fetch | undefined
@@ -67,7 +67,7 @@ class LoginButton extends Component {
   </template>
 }
 
-module('@switchyard/ember', function (hooks) {
+module('@switchyard-ts/ember', function (hooks) {
   setupRenderingTest(hooks)
 
   test('templates re-render on transitions, and settled() waits for @invoke', async function (assert) {

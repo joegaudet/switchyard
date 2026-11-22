@@ -1,9 +1,9 @@
-# @switchyard/skills
+# @switchyard-ts/skills
 
 Installs the Switchyard authoring skill for coding agents.
 
 ```bash
-npm i -D @switchyard/skills && npx switchyard-skills
+npm i -D @switchyard-ts/skills && npx switchyard-skills
 ```
 
 Writes `.claude/skills/switchyard/SKILL.md`: the DSL, its rules (synchronous event bodies, guards

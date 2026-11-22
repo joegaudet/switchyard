@@ -1,8 +1,8 @@
 // Testing Switchyard machines: model paths for model-based tests, transition coverage,
 // matchers for vitest/jest and QUnit, and a manual clock.
 import { isString } from '@sindresorhus/is'
-import { manualClock, type Machine, type Clock, type State } from '@switchyard/core'
-import { states, toGraph, type MachineClass } from '@switchyard/graph'
+import { manualClock, type Machine, type Clock, type State } from '@switchyard-ts/core'
+import { states, toGraph, type MachineClass } from '@switchyard-ts/graph'
 
 export { manualClock }
 

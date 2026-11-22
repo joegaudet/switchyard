@@ -186,7 +186,7 @@ const rules = {
 }
 
 const plugin = {
-  meta: { name: '@switchyard/eslint-plugin' },
+  meta: { name: '@switchyard-ts/eslint-plugin' },
   rules,
   configs: {} as Record<string, unknown>,
 }

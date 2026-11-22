@@ -1,5 +1,5 @@
 {
-  "name": "@switchyard/graph",
+  "name": "@switchyard-ts/graph",
   "version": "0.0.0",
   "description": "Diagrams of Switchyard machines: Mermaid, DOT and ELK-laid-out SVG, plus interface and actor views.",
   "keywords": [
@@ -49,11 +49,11 @@
     "node": ">=22.12.0"
   },
   "peerDependencies": {
-    "@switchyard/core": "workspace:^"
+    "@switchyard-ts/core": "workspace:^"
   },
   "devDependencies": {
     "@real-enums/core": "^2.2.0",
-    "@switchyard/core": "workspace:^"
+    "@switchyard-ts/core": "workspace:^"
   },
   "dependencies": {
     "@sindresorhus/is": "^8.1.0",

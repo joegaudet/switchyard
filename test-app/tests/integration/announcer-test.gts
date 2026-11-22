@@ -1,7 +1,7 @@
 import { module, test } from 'qunit'
 import { setupRenderingTest } from 'ember-qunit'
 import { render, settled } from '@ember/test-helpers'
-import { SwitchyardAnnouncer } from '@switchyard/ember'
+import { SwitchyardAnnouncer } from '@switchyard-ts/ember'
 import { OrderFlow } from 'test-app/machines'
 
 module('<SwitchyardAnnouncer>', function (hooks) {

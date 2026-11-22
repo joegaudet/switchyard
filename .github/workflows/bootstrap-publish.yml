@@ -20,7 +20,7 @@
 #      - Deployment branches and tags: "Selected branches and tags", adding
 #        the tag pattern `v*`.
 #      - Environment secrets: NPM_TOKEN (a granular token that can publish
-#        @switchyard/*, with the shortest expiry npm allows).
+#        @switchyard-ts/*, with the shortest expiry npm allows).
 #   2. Remove any repository-level copy, so the token exists only behind the
 #      environment's reviewers and tag rule:
 #        gh secret delete NPM_TOKEN --repo joegaudet/switchyard

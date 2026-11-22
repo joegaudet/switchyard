@@ -1,7 +1,7 @@
 <template>
   <h1>Testing</h1>
   <h2>Assertions and time</h2>
-  <pre><code class="language-typescript">import &lbrace; matchers, useManualClock &rbrace; from '@switchyard/test'
+  <pre><code class="language-typescript">import &lbrace; matchers, useManualClock &rbrace; from '@switchyard-ts/test'
 
 expect.extend(matchers)
 const clock = useManualClock(Fetch)
@@ -17,7 +17,7 @@ cov.track(fetch)
 console.log(String(cov.report())) // states 4/5, transitions 5/7, and which</code></pre>
   <h2>Model-based tests</h2>
   <p>
-    The machine already says what the UI should do. <code>@switchyard/harnessed</code> walks its
+    The machine already says what the UI should do. <code>@switchyard-ts/harnessed</code> walks its
     paths and turns each into a test that drives the real UI through a
     <a href="https://joegaudet.com/harnessed/">harnessed</a> harness, checking the screen after
     every step. Add a state and the tests that reach it appear; break a button and the path through

@@ -1,8 +1,8 @@
 // A live example: the demo, the source it runs (imported ?raw, so it cannot drift), and the
 // machine's live statechart.
 import type { TOC } from '@ember/component/template-only'
-import type { Machine } from '@switchyard/core'
-import { SwitchyardDebug } from '@switchyard/ember/debug'
+import type { Machine } from '@switchyard-ts/core'
+import { SwitchyardDebug } from '@switchyard-ts/ember/debug'
 
 export const Example: TOC<{
   Args: { title: string; machine: Machine<unknown>; source: string }

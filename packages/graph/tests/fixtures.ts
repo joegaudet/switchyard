@@ -8,7 +8,7 @@ import {
   State,
   transition,
   and,
-} from '@switchyard/core'
+} from '@switchyard-ts/core'
 
 export class Attempt extends State {
   static First = Attempt.of('first')

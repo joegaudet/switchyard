@@ -23,11 +23,11 @@ describe('loadMachines', () => {
     const dir = mkdtempSync(join(dirname(fixture('fetch.ts')), '.tmp-'))
     try {
       const states = (value: string) =>
-        `import { State } from '@switchyard/core'\nexport class S extends State {\n  static A = S.of('${value}')\n}\n`
+        `import { State } from '@switchyard-ts/core'\nexport class S extends State {\n  static A = S.of('${value}')\n}\n`
       writeFileSync(join(dir, 'states.ts'), states('first'))
       writeFileSync(
         join(dir, 'm.ts'),
-        `import { Machine, transition } from '@switchyard/core'\nimport { S } from './states.ts'\nexport class M extends Machine<S> {\n  @transition({ to: S.A })\n  go() {}\n}\n`,
+        `import { Machine, transition } from '@switchyard-ts/core'\nimport { S } from './states.ts'\nexport class M extends Machine<S> {\n  @transition({ to: S.A })\n  go() {}\n}\n`,
       )
       const top = async () =>
         Object.keys((await loadMachines(join(dir, 'm.ts'))).get('M')!.toConfig().states!)

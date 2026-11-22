@@ -1,7 +1,7 @@
 # Contributing
 
 pnpm workspace, Node >= 22.12. Packages import each other's **built** output, so run
-`pnpm build` after changing `@switchyard/core` before testing a package that depends on it.
+`pnpm build` after changing `@switchyard-ts/core` before testing a package that depends on it.
 
 ## The gate
 
@@ -73,7 +73,7 @@ Until the App is configured, `release.yml`'s version job is skipped rather than 
 
 **First release checklist** (needs the maintainer):
 
-1. Claim the `@switchyard` npm org (fallback scope: `@switchyard-js`).
+1. Create the `@switchyard-ts` npm org (`@switchyard` belongs to someone else).
 2. Create the release App, install it, and add `RELEASE_APP_CLIENT_ID` / `RELEASE_APP_PRIVATE_KEY`.
 3. Merge the version PR, tag, and dispatch `bootstrap-publish.yml` once for the new names.
 4. Set `joegaudet/switchyard` / `release.yml` as each package's trusted publisher; delete

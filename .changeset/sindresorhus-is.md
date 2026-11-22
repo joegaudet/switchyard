@@ -1,10 +1,10 @@
 ---
-'@switchyard/core': patch
-'@switchyard/cli': patch
-'@switchyard/graph': patch
-'@switchyard/eslint-plugin': patch
-'@switchyard/interop': patch
-'@switchyard/test': patch
+'@switchyard-ts/core': patch
+'@switchyard-ts/cli': patch
+'@switchyard-ts/graph': patch
+'@switchyard-ts/eslint-plugin': patch
+'@switchyard-ts/interop': patch
+'@switchyard-ts/test': patch
 ---
 
 Runtime type checks use `@sindresorhus/is` instead of `typeof`, now a dependency of these

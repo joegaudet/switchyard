@@ -1,5 +1,5 @@
 import Service from '@ember/service'
-import { machine } from '@switchyard/ember'
+import { machine } from '@switchyard-ts/ember'
 import { Auth } from 'docs-app/machines/auth'
 
 const KEY = 'switchyard-guide:auth'

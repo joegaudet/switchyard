@@ -1,5 +1,5 @@
 ---
-'@switchyard/core': minor
+'@switchyard-ts/core': minor
 ---
 
 The decorator DSL: `Machine`, `@transition`, `@always`, `@onEntry`, `@onExit`, `@region`,

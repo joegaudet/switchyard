@@ -22,7 +22,7 @@ async load(signal: AbortSignal) &lbrace;
     Machines use <code>setTimeout</code>; in tests give a class a manual clock and move time
     yourself:
   </p>
-  <pre><code class="language-typescript">const clock = useManualClock(Fetch) // @switchyard/test
+  <pre><code class="language-typescript">const clock = useManualClock(Fetch) // @switchyard-ts/test
 fetch.fetch()
 clock.advance(3000) // the @after(3000) transition fires now</code></pre>
   <p>

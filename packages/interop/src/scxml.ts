@@ -3,7 +3,13 @@
 // needs a datamodel is refused rather than dropped.
 import { isFunction } from '@sindresorhus/is'
 import { XMLParser } from 'fast-xml-parser'
-import type { Action, Guard, MachineConfig, StateConfig, TransitionConfig } from '@switchyard/core'
+import type {
+  Action,
+  Guard,
+  MachineConfig,
+  StateConfig,
+  TransitionConfig,
+} from '@switchyard-ts/core'
 
 const SCXML_NS = 'http://www.w3.org/2005/07/scxml'
 const SY_NS = 'https://joegaudet.com/switchyard'
