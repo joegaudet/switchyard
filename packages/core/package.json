@@ -50,5 +50,8 @@
   },
   "devDependencies": {
     "@real-enums/core": "^2.2.0"
+  },
+  "dependencies": {
+    "@sindresorhus/is": "^8.1.0"
   }
 }

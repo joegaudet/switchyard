@@ -1,6 +1,7 @@
 // An SCXML interpreter over a plain-data config. The algorithm, and most function names, are
 // the W3C recommendation's Appendix D (https://www.w3.org/TR/scxml/#AlgorithmforSCXMLInterpretation).
 // The decorator DSL compiles to this config; nothing here knows about classes or enums.
+import { isFunction, isNumber } from '@sindresorhus/is'
 
 export interface EventObject {
   type: string
@@ -464,14 +465,14 @@ export function createInterpreter(
         complete: () => done(undefined),
       })
       stop = () => sub.unsubscribe()
-    } else if (typeof result === 'function') {
+    } else if (isFunction(result)) {
       stop = result as () => void
     }
   }
 
   function delayOf(key: string): number {
     const ms = /^\d+$/.test(key) ? Number(key) : options.delays?.[key]?.()
-    if (typeof ms !== 'number' || !(ms >= 0)) throw new Error(`after: no delay "${key}"`)
+    if (!isNumber(ms) || !(ms >= 0)) throw new Error(`after: no delay "${key}"`)
     return ms
   }
 
@@ -795,14 +796,12 @@ function build(config: MachineConfig): Node {
 const afterEvent = (delay: string, n: Node) => `xstate.after.${delay}.${n.id || '(root)'}`
 
 const isThenable = (v: unknown): v is PromiseLike<unknown> =>
-  typeof (v as PromiseLike<unknown> | null)?.then === 'function'
+  isFunction((v as PromiseLike<unknown> | null)?.then)
 const isSubscribable = (v: unknown): v is Subscribable =>
-  typeof (v as Subscribable | null)?.subscribe === 'function'
+  isFunction((v as Subscribable | null)?.subscribe)
 const isInterpreter = (v: unknown): v is Interpreter => {
   const i = v as Partial<Interpreter> | null
-  return ['start', 'send', 'subscribe'].every(
-    k => typeof i?.[k as keyof Interpreter] === 'function',
-  )
+  return ['start', 'send', 'subscribe'].every(k => isFunction(i?.[k as keyof Interpreter]))
 }
 
 /** A clock that only moves when told to: `clock.advance(ms)` fires every timer that falls due. */

@@ -52,13 +52,14 @@
     "typescript": ">=5.2"
   },
   "devDependencies": {
-    "@switchyard/core": "workspace:^",
-    "@real-enums/core": "^2.2.0"
+    "@real-enums/core": "^2.2.0",
+    "@switchyard/core": "workspace:^"
   },
   "bin": {
     "switchyard": "./dist/cli.js"
   },
   "dependencies": {
+    "@sindresorhus/is": "^8.1.0",
     "@switchyard/graph": "workspace:^",
     "@switchyard/interop": "workspace:^",
     "esbuild": "^0.27.7"

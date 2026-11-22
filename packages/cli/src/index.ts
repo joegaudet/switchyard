@@ -1,4 +1,5 @@
 // The switchyard command's engine: load machine modules, render or convert them.
+import { isFunction } from '@sindresorhus/is'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { dirname, extname, join, resolve } from 'node:path'
@@ -63,8 +64,8 @@ export async function loadMachines(file: string, { legacy = false, watch }: Load
   const machines = new Map<string, MachineClass>()
   for (const [name, value] of Object.entries(module))
     if (
-      typeof value === 'function' &&
-      typeof (value as Partial<MachineClass>).toConfig === 'function' &&
+      isFunction(value) &&
+      isFunction((value as Partial<MachineClass>).toConfig) &&
       value.name !== 'Machine'
     )
       machines.set(name, value as MachineClass)

@@ -2,6 +2,7 @@
 // plain-data config: its State enums become the state tree, its decorated methods the
 // transitions and actions. Decorators work in both modes Ember apps meet: TC39 standard
 // (recorded on `context.metadata`) and legacy/experimentalDecorators (recorded per prototype).
+import { isFunction, isObject, isString } from '@sindresorhus/is'
 import type { EnumClass } from '@real-enums/core'
 import type { State } from './state.js'
 import {
@@ -102,7 +103,7 @@ function record(list: Decoration[], d: Decoration) {
 }
 
 type Standard = { kind: string; name: string | symbol; metadata: object }
-const isStandard = (c: unknown): c is Standard => typeof c === 'object' && c !== null
+const isStandard = (c: unknown): c is Standard => isObject(c)
 
 export interface MethodDecorator {
   <This, A extends unknown[], R>(
@@ -310,7 +311,7 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
   const nodeAt = (path: string) => nodes.get(path)!
 
   const guardOf = (ref: GuardRef): ((e: EventObject) => boolean) => {
-    if (typeof ref === 'string') {
+    if (isString(ref)) {
       if (!(ref in ctor.prototype))
         throw new Error(`${name}: guard "${ref}" is not a getter on the class`)
       return named(() => Boolean((self as Record<string, unknown> | undefined)?.[ref]), ref)
@@ -360,7 +361,7 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
     if (d.kind === 'transition') {
       const action: Action = named(event => {
         const result = d.body.apply(self, (event['args'] as unknown[]) ?? [])
-        if (dev && typeof (result as Promise<unknown>)?.then === 'function')
+        if (dev && isFunction((result as Promise<unknown>)?.then))
           console.warn(message('asyncEvent')(name, d.key))
       }, d.key)
       for (const node of sources(d.options)) {
@@ -376,7 +377,7 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
       const node = nodeAt(pathOf(d.state, d.in))
       ;(node[d.kind] ??= []).push(call(d.key))
     } else if (d.kind === 'after') {
-      if (typeof d.ms === 'string') {
+      if (isString(d.ms)) {
         const getter = d.ms
         if (!(getter in ctor.prototype))
           throw new Error(`${name}: delay "${getter}" is not a getter on the class`)
@@ -504,12 +505,12 @@ export interface StandardSchemaV1<Input = unknown, Output = Input> {
 // no-ops there, and its timers are on a clock that never runs.
 function checkSnapshot(ctor: typeof Machine, value: unknown): string | undefined {
   const config = (value as Snapshot | null)?.configuration
-  if (!Array.isArray(config) || !config.every(p => typeof p === 'string'))
+  if (!Array.isArray(config) || !config.every(isString))
     return 'A snapshot is an object with a configuration: string[]'
-  const { config, delays } = compile(ctor, undefined)
+  const compiled = compile(ctor, undefined)
   // With no machine, a named delay has no getter to read; the probe's timers never fire anyway.
-  const zero = Object.fromEntries(Object.keys(delays).map(k => [k, () => 0]))
-  const probe = createInterpreter(config, { clock: manualClock(), delays: zero })
+  const zero = Object.fromEntries(Object.keys(compiled.delays).map(k => [k, () => 0]))
+  const probe = createInterpreter(compiled.config, { clock: manualClock(), delays: zero })
   try {
     probe.restore(value as Snapshot)
   } catch (error) {
@@ -536,7 +537,7 @@ export function bindField(
   const t = target as Record<string, unknown>
   const read = () => machine.snapshot().configuration.join(' ')
   const write = (value: unknown) => {
-    if (typeof value === 'string' && value) machine.restore({ configuration: value.split(' ') })
+    if (isString(value) && value) machine.restore({ configuration: value.split(' ') })
   }
   if (mode === 'accessor') {
     Object.defineProperty(target, key, {
@@ -744,8 +745,7 @@ export abstract class Machine<S = State> {
     return new Proxy(
       {},
       {
-        get: (_t, key) =>
-          typeof key === 'string' && i.can({ type: events.get(key) ?? key, args: [] }),
+        get: (_t, key) => isString(key) && i.can({ type: events.get(key) ?? key, args: [] }),
       },
     )
   }

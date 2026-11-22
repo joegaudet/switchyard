@@ -1,4 +1,5 @@
 // xstate v5 machine JSON in both directions, and xstate config → decorated-class source.
+import { isFunction, isString } from '@sindresorhus/is'
 import { Machine } from '@switchyard/core'
 import type {
   Action,
@@ -49,7 +50,7 @@ const list = <T>(v: T | T[] | undefined): T[] => (v === undefined ? [] : Array.i
  * are absolute (`#Fetch.loading.first`); guards, actions and actors are their names.
  */
 export function toXState(input: MachineClass | MachineConfig, machineId?: string): XStateNode {
-  const isClass = typeof input === 'function'
+  const isClass = isFunction(input)
   const id = machineId ?? (isClass ? input.name : 'machine')
   const ref = (path: string) => `#${id}.${path}`
 
@@ -156,19 +157,19 @@ export function fromXState(json: XStateNode, implementations: Implementations = 
   const { resolve } = index(json)
   const named = <F extends (...args: never[]) => unknown>(fn: F, name: string): F =>
     Object.defineProperty(fn, 'name', { value: name })
-  const actionName = (a: XStateAction) => (typeof a === 'string' ? a : a.type)
+  const actionName = (a: XStateAction) => (isString(a) ? a : a.type)
   const action = (a: XStateAction): Action => {
     const n = actionName(a)
     return implementations.actions?.[n] ?? named(() => {}, n)
   }
   const guard = (g: string | { type: string }): Guard => {
-    const n = typeof g === 'string' ? g : g.type
+    const n = isString(g) ? g : g.type
     const fn = implementations.guards?.[n]
     if (!fn) throw new Error(`xstate guard "${n}" has no implementation`)
     return named((e => fn(e)) as Guard, n)
   }
   const transition = (source: string, t: string | XStateTransition): TransitionConfig => {
-    const obj: XStateTransition = typeof t === 'string' ? { target: t } : t
+    const obj: XStateTransition = isString(t) ? { target: t } : t
     const targets = list(obj.target).map(x => resolve(source, x))
     return {
       ...(targets.length ? { target: targets.length === 1 ? targets[0]! : targets } : {}),
@@ -320,7 +321,7 @@ export function toClassSource(json: XStateNode, name = pascal(json.id ?? 'Machin
       parts.push(`to: ${ref(targets[0])}`)
     }
     if (t.guard) {
-      const g = typeof t.guard === 'string' ? t.guard : t.guard.type
+      const g = isString(t.guard) ? t.guard : t.guard.type
       guards.add(g)
       parts.push(`guard: ${str(g)}`)
     }
@@ -332,7 +333,7 @@ export function toClassSource(json: XStateNode, name = pascal(json.id ?? 'Machin
     const source = path || undefined
     for (const [event, ts] of Object.entries(n.on ?? {})) {
       for (const t of list<string | XStateTransition>(ts)) {
-        const obj = typeof t === 'string' ? { target: t } : t
+        const obj = isString(t) ? { target: t } : t
         const opts = options(source, obj, `"${event}" on "${path || '(root)'}"`)
         if (!opts) continue
         imports.add('transition')
@@ -342,12 +343,12 @@ export function toClassSource(json: XStateNode, name = pascal(json.id ?? 'Machin
         events.set(method, [...(events.get(method) ?? []), `  @transition(${decorator})`])
         for (const a of list(obj.actions))
           (bodies.get(method) ?? bodies.set(method, new Set()).get(method)!).add(
-            typeof a === 'string' ? a : a.type,
+            isString(a) ? a : a.type,
           )
       }
     }
     list<string | XStateTransition>(n.always).forEach((t, i) => {
-      const obj = typeof t === 'string' ? { target: t } : t
+      const obj = isString(t) ? { target: t } : t
       const opts = options(source, obj, `always on "${path || '(root)'}"`)
       if (!opts) return
       imports.add('always')
@@ -355,7 +356,7 @@ export function toClassSource(json: XStateNode, name = pascal(json.id ?? 'Machin
     })
     for (const [ms, ts] of Object.entries(n.after ?? {})) {
       for (const t of list<string | XStateTransition>(ts)) {
-        const obj = typeof t === 'string' ? { target: t } : t
+        const obj = isString(t) ? { target: t } : t
         const opts = options(source, obj, `after ${ms} on "${path || '(root)'}"`)
         if (!opts) continue
         imports.add('after')
@@ -375,7 +376,7 @@ export function toClassSource(json: XStateNode, name = pascal(json.id ?? 'Machin
           imports.add(deco)
           const region = regionOf(path)
           members.push(
-            `  @${deco}(${ref(path)}${region ? `, { in: ${str(region)} }` : ''})\n  ${ident(typeof a === 'string' ? a : a.type)}() {}`,
+            `  @${deco}(${ref(path)}${region ? `, { in: ${str(region)} }` : ''})\n  ${ident(isString(a) ? a : a.type)}() {}`,
           )
         }
       }
@@ -389,7 +390,7 @@ export function toClassSource(json: XStateNode, name = pascal(json.id ?? 'Machin
         ] as const) {
           const t = ts && list<string | XStateTransition>(ts)[0]
           if (!t) continue
-          const target = list(typeof t === 'string' ? t : t.target)[0]
+          const target = list(isString(t) ? t : t.target)[0]
           if (target) opts.push(`${k}: ${ref(resolve(path, target))}`)
         }
         members.push(

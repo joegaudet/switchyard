@@ -48,8 +48,11 @@
     "@switchyard/graph": "workspace:^"
   },
   "devDependencies": {
+    "@real-enums/core": "^2.2.0",
     "@switchyard/core": "workspace:^",
-    "@switchyard/graph": "workspace:^",
-    "@real-enums/core": "^2.2.0"
+    "@switchyard/graph": "workspace:^"
+  },
+  "dependencies": {
+    "@sindresorhus/is": "^8.1.0"
   }
 }

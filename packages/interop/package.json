@@ -52,6 +52,7 @@
     "xstate": "^5.33.4"
   },
   "dependencies": {
+    "@sindresorhus/is": "^8.1.0",
     "fast-xml-parser": "^5.12.1"
   }
 }

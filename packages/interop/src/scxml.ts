@@ -1,6 +1,7 @@
 // W3C SCXML (https://www.w3.org/TR/scxml/), structure and the executable content that needs no
 // datamodel: <raise>, <send> without a delay, and <log> (which names an action). Anything that
 // needs a datamodel is refused rather than dropped.
+import { isFunction } from '@sindresorhus/is'
 import { XMLParser } from 'fast-xml-parser'
 import type { Action, Guard, MachineConfig, StateConfig, TransitionConfig } from '@switchyard/core'
 
@@ -192,7 +193,7 @@ const esc = (s: string) =>
  * Delayed transitions and invokes need a datamodel to express, and are refused.
  */
 export function toScxml(input: MachineClass | MachineConfig, name?: string): string {
-  const isClass = typeof input === 'function'
+  const isClass = isFunction(input)
   const config = isClass ? input.toConfig() : input
   const id = (path: string) => path.replace(/\$/g, '_')
   const lines: string[] = []

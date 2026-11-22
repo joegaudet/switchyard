@@ -1,5 +1,6 @@
 // Testing Switchyard machines: model paths for model-based tests, transition coverage,
 // matchers for vitest/jest and QUnit, and a manual clock.
+import { isString } from '@sindresorhus/is'
 import { manualClock, type Machine, type Clock, type State } from '@switchyard/core'
 import { states, toGraph, type MachineClass } from '@switchyard/graph'
 
@@ -43,7 +44,7 @@ function setup<M extends Machine<unknown>>(create: () => M, options: PathOptions
           .filter(e => !internalEvent.test(e)),
       ),
     ]
-  ).map(e => (typeof e === 'string' ? { type: e } : e))
+  ).map(e => (isString(e) ? { type: e } : e))
   const key = options.key ?? (m => m.snapshot().configuration.join(' '))
   // Replaying from a fresh machine keeps guards that read context honest.
   const replay = (steps: PathStep[]) => {
