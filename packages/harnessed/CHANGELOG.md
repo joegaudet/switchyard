@@ -1,5 +1,12 @@
 # @switchyard-ts/harnessed
 
+## 0.5.0
+
+### Patch Changes
+
+- @switchyard-ts/core@0.5.0
+  - @switchyard-ts/test@0.5.0
+
 ## 0.4.0
 
 ### Patch Changes

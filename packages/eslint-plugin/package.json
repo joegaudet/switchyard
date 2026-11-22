@@ -1,6 +1,6 @@
 {
   "name": "@switchyard-ts/eslint-plugin",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "ESLint rules for Switchyard machines: unreachable states, unknown guards, non-exhaustive state switches.",
   "keywords": [
     "eslint",

@@ -1,6 +1,6 @@
 {
   "name": "@switchyard-ts/interop",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Switchyard interop: xstate JSON export and import, xstate-to-class codegen, SCXML import and export.",
   "keywords": [
     "statechart",

@@ -1,5 +1,14 @@
 # @switchyard-ts/eslint-plugin
 
+## 0.5.0
+
+### Minor Changes
+
+- b0cb514: New rule `prefer-state-predicate` (in `recommended`): compare states with their `@is()`/`@isNot()`
+  predicate, `tool.isSelect`, not `tool === Tool.Select`. It fixes the comparison when the predicate
+  exists, and otherwise names the one to add. Like the other rules, it knows the State enums declared
+  in the same file.
+
 ## 0.4.0
 
 No changes in this release.
