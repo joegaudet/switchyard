@@ -1,9 +1,12 @@
+import { is } from '@real-enums/core'
 import { Machine, region, State, transition } from '@switchyard-ts/core'
 
 export class Toggle extends State {
   declare private readonly brand: never
   static Off = Toggle.of('off')
   static On = Toggle.of('on')
+
+  @is() declare isOn: boolean
 }
 
 export class Align extends State {

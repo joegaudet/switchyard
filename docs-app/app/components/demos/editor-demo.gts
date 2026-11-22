@@ -3,7 +3,7 @@ import { on } from '@ember/modifier'
 import { htmlSafe } from '@ember/template'
 import { machine, send } from '@switchyard-ts/ember'
 import { Example } from 'docs-app/components/example'
-import { Formatting, Toggle } from 'docs-app/machines/editor'
+import { Formatting } from 'docs-app/machines/editor'
 import source from 'docs-app/machines/editor.ts?raw'
 
 export default class EditorDemo extends Component {
@@ -11,16 +11,16 @@ export default class EditorDemo extends Component {
 
   // Toggle.On is a state of both bold and italic, so ask each region, not matches().
   get bold() {
-    return this.format.bold === Toggle.On
+    return this.format.bold.isOn
   }
 
   get italic() {
-    return this.format.italic === Toggle.On
+    return this.format.italic.isOn
   }
 
   get style() {
     const s = this.format.state
-    return htmlSafe(`font-weight:${s.bold === Toggle.On ? 700 : 400};font-style:${s.italic === Toggle.On ? 'italic' : 'normal'};text-align:${s.align.value}`)
+    return htmlSafe(`font-weight:${s.bold.isOn ? 700 : 400};font-style:${s.italic.isOn ? 'italic' : 'normal'};text-align:${s.align.value}`)
   }
 
   <template>

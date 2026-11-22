@@ -18,7 +18,7 @@ import EditorDemo from 'docs-app/components/demos/editor-demo'
 &rbrace;</code></pre>
   <p>
     Two regions share the <code>Toggle</code> enum, so their transitions say which one with
-    <code>in</code>. For the same reason, ask the region (<code>m.bold === Toggle.On</code>)
+    <code>in</code>. For the same reason, ask the region (<code>m.bold.isOn</code>)
     rather than <code>m.matches(Toggle.On)</code>, which is true if either is on.
   </p>
   <h2>Regions inside a state</h2>

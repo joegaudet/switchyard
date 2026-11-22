@@ -79,6 +79,8 @@ class Fetch extends Machine<FetchState> {
 - Every state enum declares `private declare readonly brand: never` (type-only). TypeScript
   compares classes by shape; the private member makes each enum its own type. The
   `switchyard/state-brand` lint rule adds it.
+- Compare states with `@is()`/`@isNot()` predicates, `tool.isSelect`, not
+  `tool === Tool.Select`; `switchyard/prefer-state-predicate` enforces it.
 - A compound state's enum names its child enums: `class FetchState extends State<Attempt>`
   (several: `State<A | B>`, regions included). `m.can()` and `m.matches()` then take
   only the machine's states.
