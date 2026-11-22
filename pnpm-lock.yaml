@@ -116,6 +116,9 @@ importers:
       '@switchyard-ts/ember':
         specifier: workspace:*
         version: link:../packages/ember
+      '@switchyard-ts/ember-concurrency':
+        specifier: workspace:*
+        version: link:../packages/ember-concurrency
       '@switchyard-ts/graph':
         specifier: workspace:*
         version: link:../packages/graph
@@ -131,6 +134,9 @@ importers:
       ember-cli-babel:
         specifier: ^8.3.2
         version: 8.3.2(@babel/core@7.29.13(supports-color@7.2.0))(supports-color@7.2.0)
+      ember-concurrency:
+        specifier: ^5.3.0
+        version: 5.3.0(@babel/core@7.29.13(supports-color@7.2.0))(@glint/template@1.11.1)(supports-color@7.2.0)
       ember-load-initializers:
         specifier: ^3.0.1
         version: 3.0.1(ember-source@7.3.1(@glimmer/component@2.2.1)(supports-color@7.2.0))
@@ -242,6 +248,58 @@ importers:
       ember-resources:
         specifier: ^7.1.0
         version: 7.1.0(@glimmer/component@2.2.1)(@glint/template@1.11.1)
+      ember-source:
+        specifier: ~7.3.1
+        version: 7.3.1(@glimmer/component@2.2.1)(supports-color@7.2.0)
+      rollup:
+        specifier: ^4.68.7
+        version: 4.68.7
+      typescript:
+        specifier: ~6.0.3
+        version: 6.0.3
+
+  packages/ember-concurrency:
+    dependencies:
+      '@embroider/addon-shim':
+        specifier: ^1.10.3
+        version: 1.11.0
+    devDependencies:
+      '@babel/core':
+        specifier: ^7.29.13
+        version: 7.29.13(supports-color@7.2.0)
+      '@babel/plugin-transform-typescript':
+        specifier: ^7.29.15
+        version: 7.29.15(@babel/core@7.29.13(supports-color@7.2.0))(supports-color@7.2.0)
+      '@babel/runtime':
+        specifier: ^7.29.15
+        version: 7.29.15
+      '@ember/library-tsconfig':
+        specifier: ^3.0.0
+        version: 3.0.0
+      '@embroider/addon-dev':
+        specifier: ^8.5.0
+        version: 8.5.0(@glint/template@1.11.1)(rollup@4.68.7)(supports-color@7.2.0)
+      '@glint/ember-tsc':
+        specifier: ^1.14.4
+        version: 1.14.4(ember-source@7.3.1(@glimmer/component@2.2.1)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@6.0.3)
+      '@glint/template':
+        specifier: ^1.11.1
+        version: 1.11.1
+      '@rollup/plugin-babel':
+        specifier: ^7.1.0
+        version: 7.1.0(@babel/core@7.29.13(supports-color@7.2.0))(rollup@4.68.7)(supports-color@7.2.0)
+      '@switchyard-ts/core':
+        specifier: workspace:^
+        version: link:../core
+      '@switchyard-ts/ember':
+        specifier: workspace:^
+        version: link:../ember
+      babel-plugin-ember-template-compilation:
+        specifier: ^4.0.1
+        version: 4.0.1
+      ember-concurrency:
+        specifier: ^5.3.0
+        version: 5.3.0(@babel/core@7.29.13(supports-color@7.2.0))(@glint/template@1.11.1)(supports-color@7.2.0)
       ember-source:
         specifier: ~7.3.1
         version: 7.3.1(@glimmer/component@2.2.1)(supports-color@7.2.0)
@@ -432,6 +490,9 @@ importers:
       '@switchyard-ts/ember':
         specifier: workspace:*
         version: link:../packages/ember
+      '@switchyard-ts/ember-concurrency':
+        specifier: workspace:*
+        version: link:../packages/ember-concurrency
       '@switchyard-ts/graph':
         specifier: workspace:*
         version: link:../packages/graph
@@ -450,6 +511,9 @@ importers:
       ember-cli-babel:
         specifier: ^8.3.2
         version: 8.3.2(@babel/core@7.29.13(supports-color@7.2.0))(supports-color@7.2.0)
+      ember-concurrency:
+        specifier: ^5.3.0
+        version: 5.3.0(@babel/core@7.29.13(supports-color@7.2.0))(@glint/template@1.11.1)(supports-color@7.2.0)
       ember-load-initializers:
         specifier: ^3.0.1
         version: 3.0.1(ember-source@7.3.1(@glimmer/component@2.2.1)(supports-color@7.2.0))
@@ -3304,6 +3368,9 @@ packages:
   decimal.js@10.6.0:
     resolution: {integrity: sha512-YpgQiITW3JXGntzdUmyUR1V812Hn8T1YVXhCu+wO3OpS4eU9l4YdD3qjyiKdV6mvV29zapkMeD390UVEf2lkUg==}
 
+  decorator-transforms@1.2.1:
+    resolution: {integrity: sha512-UUtmyfdlHvYoX3VSG1w5rbvBQ2r5TX1JsE4hmKU9snleFymadA3VACjl6SRfi9YgBCSjBbfQvR1bs9PRW9yBKw==}
+
   decorator-transforms@2.4.0:
     resolution: {integrity: sha512-IB+0RqnJpuS7ndH4dVY5dfWTZsrCzN3avWFdjSiET0uT2U24jKywjpVEK97TflnZkZgiSRfmeqc1WfS+1CI23w==}
     peerDependencies:
@@ -3438,6 +3505,15 @@ packages:
     resolution: {integrity: sha512-FZX9IoFioIn6V86t2TwbNtcr+TyzYoSf+dMR6tA/tFCePDJtIhnrMOChnYrgsSbuTecwSP3vivjHfrezrQHOOA==}
     engines: {node: '>= 20.19.0'}
     hasBin: true
+
+  ember-concurrency@5.3.0:
+    resolution: {integrity: sha512-7zN8oYZ3gudnEzNH7bL/Rs+l4rSnIXLMMaRvqbDc+wMfkhfsetZ1wlGLjK76Rc1YA0vHrneyl8zC/crHm/ncoA==}
+    engines: {node: 16.* || >= 18}
+    peerDependencies:
+      '@glint/template': '>= 1.0.0'
+    peerDependenciesMeta:
+      '@glint/template':
+        optional: true
 
   ember-estree@0.9.0:
     resolution: {integrity: sha512-CExL0d6FbbffZaQkD0+zA5PaIgle3fbpzapuLVQ+QZfI2KLalnhuof0e85Zvfy/fh8+q9liw7dqUhQX4gibMBA==}
@@ -9176,6 +9252,13 @@ snapshots:
 
   decimal.js@10.6.0: {}
 
+  decorator-transforms@1.2.1(@babel/core@7.29.13(supports-color@7.2.0)):
+    dependencies:
+      '@babel/plugin-syntax-decorators': 7.29.7(@babel/core@7.29.13(supports-color@7.2.0))
+      babel-import-util: 2.1.1
+    transitivePeerDependencies:
+      - '@babel/core'
+
   decorator-transforms@2.4.0(@babel/core@7.29.13(supports-color@7.2.0)):
     dependencies:
       '@babel/core': 7.29.13(supports-color@7.2.0)
@@ -9457,6 +9540,19 @@ snapshots:
       - velocityjs
       - walrus
       - whiskers
+
+  ember-concurrency@5.3.0(@babel/core@7.29.13(supports-color@7.2.0))(@glint/template@1.11.1)(supports-color@7.2.0):
+    dependencies:
+      '@babel/helper-module-imports': 7.29.7(supports-color@7.2.0)
+      '@babel/helper-plugin-utils': 7.29.7
+      '@babel/types': 7.29.15
+      '@embroider/addon-shim': 1.11.0
+      decorator-transforms: 1.2.1(@babel/core@7.29.13(supports-color@7.2.0))
+    optionalDependencies:
+      '@glint/template': 1.11.1
+    transitivePeerDependencies:
+      - '@babel/core'
+      - supports-color
 
   ember-estree@0.9.0:
     dependencies:

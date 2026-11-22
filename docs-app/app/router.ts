@@ -37,6 +37,7 @@ export const pages = [
   group(
     'Using it',
     ['ember', 'In Ember'],
+    ['ember-concurrency', 'With ember-concurrency'],
     ['accessibility', 'Accessibility'],
     ['diagrams', 'Diagrams'],
     ['testing', 'Testing'],

@@ -177,3 +177,14 @@ Acceptance: cross-link nav in real-enums, formwright, harnessed and joinery. For
 submit lifecycle runs on switchyard. Each project has a "with switchyard" guide page.
 Joinery's primitives come after Joinery 1.0. Each item is a branch in its own repo; this
 phase tracks them.
+
+## ember-concurrency interop
+
+Branch: `feature/joe/ember-concurrency`
+
+Acceptance:
+
+- `perform()` cancels the task on state exit and on stop, `settled()` waits for it, and a task
+  cancelled from outside takes `onError`, all covered in `test-app`.
+- The guide has a "With ember-concurrency" page with a live example and live chart.
+- The site, README, `llms.txt` and the authoring skill list the package.

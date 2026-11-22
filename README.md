@@ -28,18 +28,19 @@ class Fetch extends Machine<FetchState> {
 
 Site and guide, with a live example on every page: **https://joegaudet.com/switchyard/**
 
-| Package                                                  | For                                                               |
-| -------------------------------------------------------- | ----------------------------------------------------------------- |
-| [`@switchyard-ts/core`](packages/core)                   | Machines, decorators, the interpreter, snapshots                  |
-| [`@switchyard-ts/ember`](packages/ember)                 | Tracking, lifetimes, helpers, test waiters, announcer, debug view |
-| [`@switchyard-ts/graph`](packages/graph)                 | Mermaid, DOT, SVG, interface and actor views, live viewer         |
-| [`@switchyard-ts/test`](packages/test)                   | Model paths, coverage, matchers, a manual clock                   |
-| [`@switchyard-ts/harnessed`](packages/harnessed)         | Model-based tests through harnessed                               |
-| [`@switchyard-ts/interop`](packages/interop)             | xstate JSON and SCXML, both ways, and codegen                     |
-| [`@switchyard-ts/inspector`](packages/inspector)         | The Stately Inspector                                             |
-| [`@switchyard-ts/cli`](packages/cli)                     | `switchyard diagram\|export\|import`, and a Vite plugin           |
-| [`@switchyard-ts/eslint-plugin`](packages/eslint-plugin) | Unreachable states, unknown guards, non-exhaustive switches       |
-| [`@switchyard-ts/skills`](packages/skills)               | The authoring skill for coding agents                             |
+| Package                                                          | For                                                               |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------- |
+| [`@switchyard-ts/core`](packages/core)                           | Machines, decorators, the interpreter, snapshots                  |
+| [`@switchyard-ts/ember`](packages/ember)                         | Tracking, lifetimes, helpers, test waiters, announcer, debug view |
+| [`@switchyard-ts/ember-concurrency`](packages/ember-concurrency) | Run ember-concurrency tasks from `@invoke`                        |
+| [`@switchyard-ts/graph`](packages/graph)                         | Mermaid, DOT, SVG, interface and actor views, live viewer         |
+| [`@switchyard-ts/test`](packages/test)                           | Model paths, coverage, matchers, a manual clock                   |
+| [`@switchyard-ts/harnessed`](packages/harnessed)                 | Model-based tests through harnessed                               |
+| [`@switchyard-ts/interop`](packages/interop)                     | xstate JSON and SCXML, both ways, and codegen                     |
+| [`@switchyard-ts/inspector`](packages/inspector)                 | The Stately Inspector                                             |
+| [`@switchyard-ts/cli`](packages/cli)                             | `switchyard diagram\|export\|import`, and a Vite plugin           |
+| [`@switchyard-ts/eslint-plugin`](packages/eslint-plugin)         | Unreachable states, unknown guards, non-exhaustive switches       |
+| [`@switchyard-ts/skills`](packages/skills)                       | The authoring skill for coding agents                             |
 
 Contributing: [CONTRIBUTING.md](CONTRIBUTING.md).
 
