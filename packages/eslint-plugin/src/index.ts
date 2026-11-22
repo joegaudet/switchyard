@@ -179,6 +179,72 @@ const exhaustiveStateSwitch: Rule.RuleModule = {
   },
 }
 
+const EQUALITY = ['===', '!==', '==', '!=']
+// Rewritten without parentheses only when the other side is already a plain reference.
+const PLAIN = ['Identifier', 'MemberExpression', 'ThisExpression']
+
+const preferStatePredicate: Rule.RuleModule = {
+  meta: {
+    type: 'suggestion',
+    docs: {
+      description: 'Compare states with @is()/@isNot() predicates, not === against a member',
+    },
+    fixable: 'code',
+    schema: [],
+  },
+  create(context) {
+    let members = new Map<string, Set<string>>()
+    return {
+      Program(program) {
+        members = new Map()
+        walk(node(program), n => {
+          if (n.type !== 'ClassDeclaration' || superName(n) !== 'State') return
+          const keys = (node(n['body'])['body'] as N[]).map(m => name(m['key']))
+          members.set(name(n['id'])!, new Set(keys.filter(isString)))
+        })
+      },
+      BinaryExpression(expr) {
+        const b = node(expr)
+        const operator = b['operator'] as string
+        if (!EQUALITY.includes(operator)) return
+        const left = memberRef(b['left'])
+        const onLeft = left !== undefined && members.has(left[0])
+        const ref = onLeft ? left : memberRef(b['right'])
+        const other = onLeft ? b['right'] : b['left']
+        if (!ref || !members.has(ref[0])) return
+        const [cls, member] = ref
+        const has = members.get(cls)!
+        const negated = operator.startsWith('!')
+        const [is, isNot] = [`is${member}`, `isNot${member}`]
+        const [pred, bang] = negated
+          ? has.has(isNot)
+            ? [isNot, '']
+            : has.has(is)
+              ? [is, '!']
+              : []
+          : has.has(is)
+            ? [is, '']
+            : has.has(isNot)
+              ? [isNot, '!']
+              : []
+        const source = context.sourceCode
+        const text = `${bang}${source.getText(other as never)}.${pred}`
+        const fixable = pred && PLAIN.includes(node(other).type)
+        const use = !pred
+          ? `add an \`@is()\` predicate \`${is}\``
+          : fixable
+            ? `\`${text}\``
+            : `\`.${pred}\``
+        context.report({
+          node: expr,
+          message: `Compare states with their @is()/@isNot() predicate (${use}), not \`${source.getText(expr)}\`.`,
+          ...(fixable ? { fix: fixer => fixer.replaceText(expr, text) } : {}),
+        })
+      },
+    }
+  },
+}
+
 const BRAND = 'private declare readonly brand: never'
 
 const stateBrand: Rule.RuleModule = {
@@ -219,6 +285,7 @@ const rules = {
   'no-unknown-guard': noUnknownGuard,
   'exhaustive-state-switch': exhaustiveStateSwitch,
   'state-brand': stateBrand,
+  'prefer-state-predicate': preferStatePredicate,
 }
 
 /**
@@ -239,6 +306,7 @@ plugin.configs['recommended'] = {
     'switchyard/no-unknown-guard': 'error',
     'switchyard/exhaustive-state-switch': 'warn',
     'switchyard/state-brand': 'error',
+    'switchyard/prefer-state-predicate': 'error',
   },
 }
 

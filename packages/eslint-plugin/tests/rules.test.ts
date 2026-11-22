@@ -120,3 +120,60 @@ tester.run('state-brand', plugin.rules['state-brand'], {
     },
   ],
 })
+
+const tools = `
+class Tool extends State {
+  private declare readonly brand: never
+  static Select = Tool.of('select')
+  static Hand = Tool.of('hand')
+  static Pan = Tool.of('pan')
+  @is() declare isSelect: boolean
+  @isNot() declare isNotHand: boolean
+}`
+
+const predicateError = (expr: string, use: string) => ({
+  message: `Compare states with their @is()/@isNot() predicate (${use}), not \`${expr}\`.`,
+})
+
+tester.run('prefer-state-predicate', plugin.rules['prefer-state-predicate'], {
+  valid: [
+    `${tools}\nconst a = tool.isSelect`,
+    // Not a State enum of this file.
+    `const a = color === Color.Red`,
+  ],
+  invalid: [
+    {
+      code: `${tools}\nconst a = this.tool === Tool.Select`,
+      output: `${tools}\nconst a = this.tool.isSelect`,
+      errors: [predicateError('this.tool === Tool.Select', '`this.tool.isSelect`')],
+    },
+    {
+      code: `${tools}\nconst a = Tool.Select !== tool`,
+      output: `${tools}\nconst a = !tool.isSelect`,
+      errors: [predicateError('Tool.Select !== tool', '`!tool.isSelect`')],
+    },
+    {
+      code: `${tools}\nconst a = tool !== Tool.Hand`,
+      output: `${tools}\nconst a = tool.isNotHand`,
+      errors: [predicateError('tool !== Tool.Hand', '`tool.isNotHand`')],
+    },
+    {
+      // Only isNotHand: the fix negates it.
+      code: `${tools}\nconst a = tool === Tool.Hand`,
+      output: `${tools}\nconst a = !tool.isNotHand`,
+      errors: [predicateError('tool === Tool.Hand', '`!tool.isNotHand`')],
+    },
+    {
+      // No predicate for Pan: reported, not fixed.
+      code: `${tools}\nconst a = tool === Tool.Pan`,
+      output: null,
+      errors: [predicateError('tool === Tool.Pan', 'add an `@is()` predicate `isPan`')],
+    },
+    {
+      // A call on the other side is not rewritten.
+      code: `${tools}\nconst a = pick() === Tool.Select`,
+      output: null,
+      errors: [predicateError('pick() === Tool.Select', '`.isSelect`')],
+    },
+  ],
+})
