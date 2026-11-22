@@ -1,5 +1,13 @@
 # @switchyard-ts/cli
 
+## 0.2.0
+
+### Patch Changes
+
+- @switchyard-ts/core@0.2.0
+  - @switchyard-ts/graph@0.2.0
+  - @switchyard-ts/interop@0.2.0
+
 ## 0.1.0
 
 ### Minor Changes
