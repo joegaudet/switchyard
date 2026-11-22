@@ -473,6 +473,9 @@ export type StatesOf<S> = unknown extends S
       ? StatesOf<S[keyof S]>
       : never
 
+/** A method of the machine, naming the event `emit` delivers and `on` listens for. */
+export type EmittedBy = (...args: never[]) => unknown
+
 /** `m.can(State, { via })` and `m.can.event`; see {@link Machine.can}. */
 export type Can<S = unknown> = CanEnter<S> & { readonly [event: string]: boolean }
 
@@ -854,18 +857,38 @@ export abstract class Machine<S = State> {
     return this.#system
   }
 
-  /** Delivers `{ type, ...payload }` to `on(type)` listeners outside the machine. */
-  emit(type: string, payload: Record<string, unknown> = {}): void {
-    for (const listener of [...(this.#listeners.get(type) ?? [])]) listener({ type, ...payload })
+  /**
+   * Delivers `{ type, ...payload }` to `on(type)` listeners outside the machine. `type` is a method
+   * of the machine, `this.emit(this.factClosed)`, named `factClosed`; or that name as a string.
+   */
+  emit(type: string | EmittedBy, payload: Record<string, unknown> = {}): void {
+    const name = this.#emitted(type)
+    for (const listener of [...(this.#listeners.get(name) ?? [])])
+      listener({ type: name, ...payload })
   }
 
+  /** `m.on(m.factClosed, fn)`: listens for what `this.emit(this.factClosed)` delivers. */
   on(
-    type: string,
+    type: string | EmittedBy,
     listener: (event: { type: string; [key: string]: unknown }) => void,
   ): () => void {
-    const set = this.#listeners.get(type) ?? new Set()
-    this.#listeners.set(type, set.add(listener as (event: { type: string }) => void))
+    const name = this.#emitted(type)
+    const set = this.#listeners.get(name) ?? new Set()
+    this.#listeners.set(name, set.add(listener as (event: { type: string }) => void))
     return () => void set.delete(listener as (event: { type: string }) => void)
+  }
+
+  // The key the method is stored under, found by identity, so minified function names don't matter.
+  #emitted(type: string | EmittedBy): string {
+    if (isString(type)) return type
+    for (
+      let o: object | null = Object.getPrototypeOf(this);
+      o && o !== Object.prototype;
+      o = Object.getPrototypeOf(o)
+    )
+      for (const key of Object.getOwnPropertyNames(o))
+        if (Object.getOwnPropertyDescriptor(o, key)?.value === type) return key
+    throw new Error(`${type.name || 'That function'} is not a method of ${this.constructor.name}`)
   }
 
   /** Streams the interpreter's events, microsteps and snapshots. Does not start the machine. */

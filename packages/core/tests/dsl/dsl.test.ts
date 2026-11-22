@@ -305,11 +305,25 @@ describe.each([
       it('emit() reaches on() listeners', () => {
         const m = new Uploader()
         const seen: unknown[] = []
-        const off = m.on('progress', e => void seen.push(e))
+        const off = m.on('progressed', e => void seen.push(e))
         m.progressed('x')
         off()
         m.progressed('y')
-        expect(seen).toEqual([{ type: 'progress', name: 'x' }])
+        expect(seen).toEqual([{ type: 'progressed', name: 'x' }])
+      })
+
+      it('emit() and on() take the method the event is named for', () => {
+        const m = new Uploader()
+        const seen: unknown[] = []
+        m.on(m.progressed, e => void seen.push(e))
+        m.progressed('x')
+        expect(seen).toEqual([{ type: 'progressed', name: 'x' }])
+        expect(() =>
+          m.on(
+            () => {},
+            () => {},
+          ),
+        ).toThrow(/not a method of Uploader/)
       })
 
       it('inspect() streams the interpreter events', () => {
