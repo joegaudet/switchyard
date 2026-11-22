@@ -38,7 +38,7 @@ real-enums, with an indigo accent.
 | 12  | **Dual-mode decorators**, TC39 standard and legacy (decorator-transforms), using the same pattern as real-enums' `@is()`                                                                                                                                              |
 | 13  | **Guards name a tracked getter (a computed property):** `guard: 'hasRetriesLeft'` refers to `get hasRetriesLeft()`. Named guards appear as labels in diagrams. Combinators `and/or/not` take names too. Unknown names throw when the machine first compiles (Phase 2) |
 | 14  | **Context is `@tracked` fields** that actions mutate directly. There is no `assign()`                                                                                                                                                                                 |
-| 15  | Async work is native `async` with an `AbortSignal` that aborts when the owning state exits. No ember-concurrency                                                                                                                                                      |
+| 15  | Async work is native `async` with an `AbortSignal` that aborts when the owning state exits. No ember-concurrency in core; `@switchyard-ts/ember-concurrency` (2026-11-21) lets `@invoke` run existing tasks                                                           |
 | 16  | An unhandled event is a no-op with a dev-mode warning. `static strict = true` makes it throw                                                                                                                                                                          |
 | 17  | **Parallel regions are `@region` accessor fields:** `@region bold = Toggle`, and `m.state.bold === Toggle.On`                                                                                                                                                         |
 | 18  | `@after(ms, { from, to })` uses an injectable clock, and pending timers register Ember test waiters                                                                                                                                                                   |
@@ -144,6 +144,7 @@ in each. real-enums gets **additive minor releases only**. Joinery adopts switch
 packages/
   core/          @switchyard-ts/core        State, Machine, decorators, interpreter, actors, inspect, snapshot
   ember/         @switchyard-ts/ember       v2 addon: tracking, owner/destroyables, resource, helpers, waiters, services
+  ember-concurrency/ @switchyard-ts/ember-concurrency  v2 addon: perform() runs a task from @invoke
   graph/         @switchyard-ts/graph       toGraph(), Mermaid, DOT and ELK→SVG; /viewer: the live web component
   interop/       @switchyard-ts/interop     xstate JSON and SCXML import/export, plus the codegen
   test/          @switchyard-ts/test        clock, matchers, coverage, and model-based paths
@@ -270,6 +271,13 @@ conformance suite and the xstate feature matrix are fully green.
    `@switchyard-ts/harnessed`).
 5. **ember-joinery, after 1.0:** move the stateful primitives (dialog, combobox, menu, tabs)
    onto machines in a 1.x minor.
+
+### ember-concurrency interop
+
+`@switchyard-ts/ember-concurrency`: `perform(signal, task, ...args)` runs an existing task from
+an `@invoke` method. Leaving the state or stopping the machine cancels it, `settled()` waits
+for it, and a task cancelled from outside takes `onError`. Plus a guide page with a live demo,
+and the package listed on the site, README and `llms.txt`.
 
 ## Risks and open items
 

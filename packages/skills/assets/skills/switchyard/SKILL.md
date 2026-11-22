@@ -88,7 +88,9 @@ Import `@switchyard-ts/ember` once (it wires tracking and test waiters). Then
 `fetch = machine(this, new Fetch())` in a component or service (stopped on destroy), and in
 templates `{{on "click" (send this.fetch "retry")}}`, `(matches this.fetch FetchState.Done)`,
 `(can this.fetch "retry")`. `<SwitchyardDebug @machine={{this.fetch}} />` from
-`@switchyard-ts/ember/debug` shows the live chart.
+`@switchyard-ts/ember/debug` shows the live chart. To run an existing ember-concurrency task, return
+`perform(signal, this.task, ...args)` (from `@switchyard-ts/ember-concurrency`) from an `@invoke`
+method; don't hand-roll cancellation.
 
 ## Testing
 

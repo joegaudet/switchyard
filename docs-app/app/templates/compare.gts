@@ -43,6 +43,10 @@ button = machine(this, new Submit(() =&gt; this.args.onSubmit()))</code></pre>
   machine: buttonMachine.withConfig(&lbrace; services: &lbrace; onSubmit: this.args.onSubmit &rbrace; &rbrace;),
 &rbrace;))
 // buttonMachine: an xstate v4 createMachine config like the one above</code></pre>
+  <p>
+    Using ember-concurrency for async work? A machine can run your existing tasks; see
+    <a href="#/ember-concurrency">With ember-concurrency</a>.
+  </p>
   <h2>Side by side</h2>
   <table class="matrix">
     <thead><tr><th></th><th>Switchyard</th><th>xstate v5</th><th>ember-statecharts</th></tr></thead>

@@ -491,6 +491,8 @@ export default class UserCard extends Component {
           <code>await settled()</code> waits for invokes and timers.
           <code>&lt;SwitchyardAnnouncer&gt;</code> tells screen readers what changed. Snapshots
           restore across reloads, and <code>bindField</code> puts a state in a record or the URL.
+          Already on <a href="guide/#/ember-concurrency">ember-concurrency</a>?
+          <code>@invoke</code> runs your tasks and cancels them when the state exits.
           <a href="guide/#/ember">In Ember →</a>
         </p>
       </section>
@@ -538,6 +540,13 @@ export default class UserCard extends Component {
               <td>
                 Tracking, lifetimes, helpers, waiters, <code>&lt;SwitchyardAnnouncer&gt;</code>,
                 <code>&lt;SwitchyardDebug&gt;</code>
+              </td>
+            </tr>
+            <tr>
+              <td><code>@switchyard-ts/ember-concurrency</code></td>
+              <td>
+                Run ember-concurrency tasks from <code>@invoke</code>; leaving the state cancels
+                them
               </td>
             </tr>
             <tr>

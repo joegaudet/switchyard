@@ -12,6 +12,13 @@
     <li><strong>Update the templates.</strong> <code>this.statechart.state.matches('busy')</code> becomes <code>this.button.matches(Button.Busy)</code>, or <code>this.button.state.isBusy</code> with an <code>@is()</code> predicate. <code>this.statechart.send('SUBMIT')</code> becomes <code>this.button.submit()</code>, or <code>(send this.button "submit")</code> in a template.</li>
     <li><strong>Drop the waiters you wrote.</strong> <code>settled()</code> already waits for invokes and timers.</li>
   </ol>
+  <h2>From ember-concurrency</h2>
+  <p>
+    Keep your tasks. Put the states they imply into a machine and run each task from an
+    <code>@invoke</code> method with <code>perform()</code>, so leaving the state cancels it. Move a
+    task into a plain <code>async</code> <code>@invoke</code> method once the machine is its only
+    caller. See <a href="#/ember-concurrency">With ember-concurrency</a>.
+  </p>
   <h2>From xstate</h2>
   <p>
     The semantics are the same, so behaviour carries over; <code>toXState</code> and

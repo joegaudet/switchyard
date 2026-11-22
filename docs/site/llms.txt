@@ -23,6 +23,7 @@ decorated methods may not be named after Machine's own members (`stop`, `send`, 
 
 - @switchyard-ts/core: Machine, State, decorators, createInterpreter, configure, bindField
 - @switchyard-ts/ember: machine(owner, m), send/matches/can helpers, test waiters, SwitchyardAnnouncer; /resource (machineResource); /debug (SwitchyardDebug)
+- @switchyard-ts/ember-concurrency: perform(signal, task, ...args) runs a task from @invoke; state exit cancels it
 - @switchyard-ts/graph: toGraph, toMermaid, toDot, toSvg, describeInterface, topology; /viewer (<switchyard-diagram>)
 - @switchyard-ts/test: shortestPaths, simplePaths, coverage, matchers (toBeIn), setupMachineAssertions, useManualClock
 - @switchyard-ts/harnessed: modelTests

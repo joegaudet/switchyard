@@ -15,6 +15,8 @@ async load(signal: AbortSignal) &lbrace;
   <p>
     What the method returns decides the kind of actor: a promise, another <code>Machine</code> (see
     <a href="#/actors">Actors</a>), an observable, or a cleanup function for callback-style work.
+    An existing ember-concurrency task works too; see
+    <a href="#/ember-concurrency">With ember-concurrency</a>.
   </p>
   <h2>@after</h2>
   <p>
