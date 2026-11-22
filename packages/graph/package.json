@@ -1,0 +1,61 @@
+{
+  "name": "@switchyard/graph",
+  "version": "0.0.0",
+  "description": "Diagrams of Switchyard machines: Mermaid, DOT and ELK-laid-out SVG, plus interface and actor views.",
+  "keywords": [
+    "statechart",
+    "diagram",
+    "mermaid",
+    "graphviz",
+    "elk"
+  ],
+  "license": "MIT",
+  "author": "Joe Gaudet joe@joegaudet.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joegaudet/switchyard.git",
+    "directory": "packages/graph"
+  },
+  "homepage": "https://joegaudet.com/switchyard/",
+  "bugs": "https://github.com/joegaudet/switchyard/issues",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./viewer": {
+      "types": "./dist/viewer.d.ts",
+      "default": "./dist/viewer.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "peerDependencies": {
+    "@switchyard/core": "workspace:^"
+  },
+  "devDependencies": {
+    "@real-enums/core": "^2.2.0",
+    "@switchyard/core": "workspace:^"
+  },
+  "dependencies": {
+    "elkjs": "^0.10.2"
+  }
+}

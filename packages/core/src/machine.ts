@@ -203,6 +203,10 @@ function decorationsOf(ctor: typeof Machine): Decoration[] {
   })
 }
 
+// Diagrams label transitions with these names; see @switchyard/graph.
+const named = <F extends (...args: never[]) => unknown>(fn: F, name: string): F =>
+  Object.defineProperty(fn, 'name', { value: name })
+
 const dev =
   (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.[
     'NODE_ENV'
@@ -272,24 +276,22 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
     if (typeof ref === 'string') {
       if (!(ref in ctor.prototype))
         throw new Error(`${name}: guard "${ref}" is not a getter on the class`)
-      return () => Boolean((self as Record<string, unknown> | undefined)?.[ref])
+      return named(() => Boolean((self as Record<string, unknown> | undefined)?.[ref]), ref)
     }
     if ('and' in ref) {
       const gs = ref.and.map(guardOf)
-      return e => gs.every(g => g(e))
+      return named(e => gs.every(g => g(e)), gs.map(g => g.name).join(' && '))
     }
     if ('or' in ref) {
       const gs = ref.or.map(guardOf)
-      return e => gs.some(g => g(e))
+      return named(e => gs.some(g => g(e)), gs.map(g => g.name).join(' || '))
     }
     const g = guardOf(ref.not)
-    return e => !g(e)
+    return named(e => !g(e), `!${g.name}`)
   }
 
-  const call =
-    (key: string): Action =>
-    () =>
-      void (self as unknown as Record<string, () => unknown>)?.[key]?.()
+  const call = (key: string): Action =>
+    named(() => void (self as unknown as Record<string, () => unknown>)?.[key]?.(), key)
 
   const transitionConfig = (options: TransitionOptions, action: Action): TransitionConfig => {
     const { to } = options
@@ -312,13 +314,13 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
 
   for (const d of decorations) {
     if (d.kind === 'transition') {
-      const action: Action = event => {
+      const action: Action = named(event => {
         const result = d.body.apply(self, (event['args'] as unknown[]) ?? [])
         if (dev && typeof (result as Promise<unknown>)?.then === 'function')
           console.warn(
             `${name}: event "${d.key}" returned a promise; run async work in @invoke or @onEntry`,
           )
-      }
+      }, d.key)
       for (const node of sources(d.options)) {
         const on = (node.on ??= {})
         on[d.key] = [...[on[d.key] ?? []].flat(), transitionConfig(d.options, action)]
@@ -346,7 +348,7 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
           if (!(result instanceof Machine))
             return configured.track && result instanceof Promise ? configured.track(result) : result
           child = result
-          return Machine[INTERNAL].adopt(self as Machine<unknown>, child, systemId)
+          return Machine[INTERNAL].adopt(self as Machine<unknown>, child, systemId, invocation.id!)
         },
         output: () => (child as { output?: unknown } | undefined)?.output,
         ...(onDone ? { onDone: { target: pathOf(onDone, region) } } : {}),
@@ -490,11 +492,18 @@ export abstract class Machine<S = State> {
   #parent?: Machine<unknown>
   #system = new Map<string, Machine<unknown>>()
   #spawned = new Map<string, Machine<unknown>>()
+  #invoked = new Map<string, Machine<unknown>>()
   #listeners = new Map<string, Set<(event: { type: string }) => void>>()
 
   // Module-internal: lets compile() link an invoked child, which needs the private fields.
   static [INTERNAL] = {
-    adopt(parent: Machine<unknown>, child: Machine<unknown>, systemId: string | undefined) {
+    adopt(
+      parent: Machine<unknown>,
+      child: Machine<unknown>,
+      systemId: string | undefined,
+      invokedAs?: string,
+    ) {
+      if (invokedAs) parent.#invoked.set(invokedAs, child)
       child.#parent = parent
       child.#system = parent.#system
       if (systemId) parent.#system.set(systemId, child)
@@ -627,6 +636,14 @@ export abstract class Machine<S = State> {
     Machine[INTERNAL].adopt(this, child, options.systemId)
     this.#spawned.set(options.id, child)
     return child.start()
+  }
+
+  /** Running child machines, invoked then spawned, by id. Diagrams draw the actor tree from it. */
+  get actors(): Map<string, Machine<unknown>> {
+    void this.#i
+    configured.reactivity?.consume(this)
+    const running = [...this.#invoked, ...this.#spawned].filter(([, m]) => m.status === 'active')
+    return new Map(running)
   }
 
   /** Sends an event to a spawned or invoked actor by id. */
