@@ -2,10 +2,13 @@
 // source compiled the way Ember apps compile it; spec.ts runs one suite against both.
 import { is } from '@real-enums/core'
 import {
+  after,
   always,
   and,
   history,
+  invoke,
   Machine,
+  manualClock,
   not,
   onEntry,
   onExit,
@@ -171,4 +174,80 @@ export function ambiguousRegion(): Machine<unknown> {
     flip() {}
   }
   return new Bad()
+}
+
+export class Job extends State {
+  static Idle = Job.of('idle')
+  static Running = Job.of('running')
+  static Done = Job.of('done')
+  static Failed = Job.of('failed')
+  static TimedOut = Job.of('timedOut')
+}
+
+export class Worker extends Machine<Job> {
+  static override clock = manualClock()
+  result?: string
+  signal?: AbortSignal
+  settle?: { resolve(v: string): void; reject(e: Error): void }
+
+  @transition({ from: Job.Idle, to: Job.Running })
+  begin() {}
+
+  @transition({ from: Job.Running, to: Job.Idle })
+  cancel() {}
+
+  @invoke(Job.Running, { onDone: Job.Done, onError: Job.Failed })
+  async run(signal: AbortSignal) {
+    this.signal = signal
+    this.result = await new Promise<string>(
+      (resolve, reject) => (this.settle = { resolve, reject }),
+    )
+  }
+
+  @after(1000, { from: Job.Running, to: Job.TimedOut })
+  timeout() {}
+}
+
+export class Upload extends State {
+  static Sending = Upload.of('sending')
+  static Sent = Upload.of('sent', { final: true })
+}
+
+export class FileUpload extends Machine<Upload> {
+  constructor(readonly name: string) {
+    super()
+  }
+
+  get output() {
+    return `${this.name} uploaded`
+  }
+
+  @transition({ from: Upload.Sending, to: Upload.Sent })
+  finish() {
+    this.sendParent('progressed', this.name)
+  }
+}
+
+export class Queue extends State {
+  static Working = Queue.of('working')
+  static Empty = Queue.of('empty')
+}
+
+export class Uploader extends Machine<Queue> {
+  log: string[] = []
+
+  add(name: string) {
+    return this.spawn(new FileUpload(name), { id: name, systemId: name })
+  }
+
+  @transition({ from: Queue.Working })
+  progressed(name: string) {
+    this.log.push(name)
+    this.emit('progress', { name })
+  }
+
+  @invoke(Queue.Working, { id: 'main', onDone: Queue.Empty })
+  main() {
+    return new FileUpload('main')
+  }
 }

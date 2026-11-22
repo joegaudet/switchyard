@@ -7,6 +7,9 @@ import type { State } from './state.js'
 import {
   createInterpreter,
   type Action,
+  type Clock,
+  type InspectionEvent,
+  type InvokeConfig,
   type EventObject,
   type Interpreter,
   type MachineConfig,
@@ -49,11 +52,25 @@ export interface TransitionOptions {
 
 type Fn = (this: unknown, ...args: unknown[]) => unknown
 
+export interface InvokeOptions {
+  /** Defaults to the method name. */
+  id?: string
+  /** Registers an invoked machine in the system: `this.system.get(systemId)`. */
+  systemId?: string
+  /** Taken when the method's promise resolves, or its child machine finishes. */
+  onDone?: State
+  /** Taken when the method throws or its promise rejects. */
+  onError?: State
+  in?: string
+}
+
 type Decoration =
   | { kind: 'transition'; key: string; options: TransitionOptions; body: Fn }
   | { kind: 'always'; key: string; options: TransitionOptions }
   | { kind: 'entry' | 'exit'; key: string; state: State; in: string | undefined }
   | { kind: 'region'; key: string; states: EnumClass<State> }
+  | { kind: 'after'; key: string; ms: number; options: TransitionOptions }
+  | { kind: 'invoke'; key: string; state: State; invoke: InvokeOptions }
 
 const DECORATIONS = Symbol('switchyard.decorations')
 const BODY = Symbol('switchyard.body')
@@ -127,6 +144,17 @@ export const onEntry = (state: State, options: { in?: string } = {}) =>
 
 export const onExit = (state: State, options: { in?: string } = {}) =>
   methodDecorator(key => ({ kind: 'exit', key, state, in: options.in }), false)
+
+/** A delayed transition, on the machine's clock; the method runs as its action. */
+export const after = (ms: number, options: TransitionOptions) =>
+  methodDecorator(key => ({ kind: 'after', key, ms, options }), false)
+
+/**
+ * Runs the method while `state` is active, passing an AbortSignal that aborts on exit. What
+ * it returns decides the actor: a promise, a child Machine, a Subscribable, or a cleanup function.
+ */
+export const invoke = (state: State, options: InvokeOptions = {}) =>
+  methodDecorator(key => ({ kind: 'invoke', key, state, invoke: options }), false)
 
 export interface RegionDecorator {
   <This, V>(
@@ -299,6 +327,29 @@ function compile(ctor: typeof Machine, self: object | undefined): Compiled {
     } else if (d.kind === 'entry' || d.kind === 'exit') {
       const node = nodeAt(pathOf(d.state, d.in))
       ;(node[d.kind] ??= []).push(call(d.key))
+    } else if (d.kind === 'after') {
+      for (const node of sources(d.options)) {
+        const after = (node.after ??= {})
+        after[d.ms] = [...[after[d.ms] ?? []].flat(), transitionConfig(d.options, call(d.key))]
+      }
+    } else if (d.kind === 'invoke') {
+      const { onDone, onError, systemId, in: region } = d.invoke
+      let child: Machine<unknown> | undefined
+      const invocation: InvokeConfig = {
+        id: d.invoke.id ?? d.key,
+        src: ({ signal }) => {
+          const result = (self as Record<string, (s: AbortSignal) => unknown> | undefined)?.[
+            d.key
+          ]?.(signal)
+          if (!(result instanceof Machine)) return result
+          child = result
+          return Machine[INTERNAL].adopt(self as Machine<unknown>, child, systemId)
+        },
+        output: () => (child as { output?: unknown } | undefined)?.output,
+        ...(onDone ? { onDone: { target: pathOf(onDone, region) } } : {}),
+        ...(onError ? { onError: { target: pathOf(onError, region) } } : {}),
+      }
+      ;(nodeAt(pathOf(d.state, region)).invoke ??= []).push(invocation)
     }
   }
   return { config, paths, root }
@@ -314,6 +365,7 @@ function rootEnum(ctor: typeof Machine, decorations: Decoration[]): EnumClass<St
   }
   for (const d of decorations) {
     if (d.kind === 'entry' || d.kind === 'exit') add(d.state)
+    else if (d.kind === 'invoke') [d.state, d.invoke.onDone, d.invoke.onError].forEach(add)
     else if ('options' in d) {
       ;[d.options.from ?? []].flat().forEach(add)
       add(d.options.to)
@@ -334,14 +386,32 @@ function rootEnum(ctor: typeof Machine, decorations: Decoration[]): EnumClass<St
  * A statechart, written as a class: `class Fetch extends Machine<FetchState>`. Decorated
  * methods are its events; `@tracked` (or plain) fields are its context. It starts on first use.
  */
+const INTERNAL = Symbol('switchyard.internal')
+
 export abstract class Machine<S = State> {
   /** Throw on an event the current state does not handle, instead of warning. */
   static strict = false
   /** The root state enum, when it cannot be inferred from the decorators. */
   static states?: EnumClass<State>
+  /** Timers for `@after`. Tests assign `manualClock()`; it is inherited by subclasses. */
+  static clock?: Clock
 
   #interpreter?: Interpreter
   #compiled?: Compiled
+  #parent?: Machine<unknown>
+  #system = new Map<string, Machine<unknown>>()
+  #spawned = new Map<string, Machine<unknown>>()
+  #listeners = new Map<string, Set<(event: { type: string }) => void>>()
+
+  // Module-internal: lets compile() link an invoked child, which needs the private fields.
+  static [INTERNAL] = {
+    adopt(parent: Machine<unknown>, child: Machine<unknown>, systemId: string | undefined) {
+      child.#parent = parent
+      child.#system = parent.#system
+      if (systemId) parent.#system.set(systemId, child)
+      return child.#create()
+    },
+  }
 
   static toConfig(): MachineConfig {
     return compile(this, undefined).config
@@ -358,6 +428,7 @@ export abstract class Machine<S = State> {
       const ctor = this.constructor as typeof Machine
       this.#compiled = compile(ctor, this)
       this.#interpreter = createInterpreter(this.#compiled.config, {
+        ...(ctor.clock ? { clock: ctor.clock } : {}),
         onUnhandled: event => {
           const message = `${ctor.name}: no transition for "${event.type}" in ${this.#describeState()}`
           if (ctor.strict) throw new Error(message)
@@ -412,8 +483,55 @@ export abstract class Machine<S = State> {
   }
 
   stop(): this {
+    for (const child of this.#spawned.values()) child.stop()
+    this.#spawned.clear()
     this.#interpreter?.stop()
     return this
+  }
+
+  /** Starts `child` as an actor of this machine, stopped when this one stops. */
+  spawn<M extends Machine<unknown>>(child: M, options: { id: string; systemId?: string }): M {
+    Machine[INTERNAL].adopt(this, child, options.systemId)
+    this.#spawned.set(options.id, child)
+    return child.start()
+  }
+
+  /** Sends an event to a spawned or invoked actor by id. */
+  sendTo(id: string, event: string, ...args: unknown[]): void {
+    const spawned = this.#spawned.get(id)
+    if (spawned) return spawned.send(event, ...args)
+    if (!this.#i.sendTo(id, { type: event, args }) && dev)
+      console.warn(`${this.constructor.name}: no actor "${id}" for "${event}"`)
+  }
+
+  /** Sends an event to the machine that spawned or invoked this one. */
+  sendParent(event: string, ...args: unknown[]): void {
+    if (this.#parent) this.#parent.send(event, ...args)
+    else if (dev) console.warn(`${this.constructor.name}: sendParent("${event}") with no parent`)
+  }
+
+  /** Actors registered by systemId anywhere in this machine's tree. */
+  get system(): { get(systemId: string): Machine<unknown> | undefined } {
+    return this.#system
+  }
+
+  /** Delivers `{ type, ...payload }` to `on(type)` listeners outside the machine. */
+  emit(type: string, payload: Record<string, unknown> = {}): void {
+    for (const listener of [...(this.#listeners.get(type) ?? [])]) listener({ type, ...payload })
+  }
+
+  on(
+    type: string,
+    listener: (event: { type: string; [key: string]: unknown }) => void,
+  ): () => void {
+    const set = this.#listeners.get(type) ?? new Set()
+    this.#listeners.set(type, set.add(listener as (event: { type: string }) => void))
+    return () => void set.delete(listener as (event: { type: string }) => void)
+  }
+
+  /** Streams the interpreter's events, microsteps and snapshots. Does not start the machine. */
+  inspect(listener: (event: InspectionEvent) => void): () => void {
+    return this.#create().inspect(listener)
   }
 
   /** Called after every event that took a transition, and once on start. */
